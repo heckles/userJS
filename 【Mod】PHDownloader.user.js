@@ -12,7 +12,7 @@
 // @require      https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js
 // @license MIT
 // @downloadURL https://update.sleazyfork.org/scripts/483386/PHDownloader.user.js
-// @updateURL https://update.sleazyfork.org/scripts/483386/PHDownloader.meta.js
+// @updateURL https://github.com/heckles/userJS/raw/main/%E3%80%90Mod%E3%80%91PHDownloader.user.js
 // ==/UserScript==
 
 /**
