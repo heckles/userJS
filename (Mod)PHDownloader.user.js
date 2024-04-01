@@ -2,7 +2,7 @@
 // ==UserScript==
 // @name         （Mod）PHDownloader
 // @namespace    http://tampermonkey.net/
-// @version      0.0.2-Mod-20240401-01
+// @version      0.0.2-Mod-20240401-02
 // @description  Pornhub 视频一键下载 | pornhub.com 【Mod】1、调整样式减少版面占用，2、增加对手机网页的支持
 // @author       Hmhm【Mod by Heckles】
 // @match        *://*.pornhub.com/view_video.php?viewkey=*
