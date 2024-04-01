@@ -2,7 +2,7 @@
 // ==UserScript==
 // @name         【Mod】PHDownloader
 // @namespace    http://tampermonkey.net/
-// @version      0.0.2
+// @version      0.0.2-Mod
 // @description  Pornhub 视频一键下载 | pornhub.com
 // @author       Hmhm
 // @match        *://*.pornhub.com/view_video.php?viewkey=*
