@@ -8,7 +8,7 @@
 // @description:zh-cn 一键保存视频/图片
 // @description:zh-tw 一鍵保存視頻/圖片
 // @version     1.27-Mod-20240408(1.修改下载文件名格式)
-// @author      AMANE
+// @author      AMANE（Mod by heckles）
 // @namespace   none
 // @match       https://twitter.com/*
 // @match       https://mobile.twitter.com/*
