@@ -7,11 +7,12 @@
 // @description:ja ワンクリックで動画?画像を保存する。
 // @description:zh-cn 一键保存视频/图片
 // @description:zh-tw 一鍵保存視頻/圖片
-// @version     1.27-Mod-20240408.01
+// @version     1.27-Mod-20240408.02
 // @author      AMANE【Mod by heckles】
 // @namespace   none
 // @match       https://twitter.com/*
 // @match       https://mobile.twitter.com/*
+// @icon        https://i.imgur.com/M9oO8K9.png
 // @grant       GM_registerMenuCommand
 // @grant       GM_setValue
 // @grant       GM_getValue
