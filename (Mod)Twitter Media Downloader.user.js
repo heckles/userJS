@@ -1,14 +1,14 @@
 // ==UserScript==
 // @name        (Mod)Twitter Media Downloader
 // @name:ja     Twitter Media Downloader
-// @name:zh-cn  Twitter Ã½ÌåÏÂÔØ
-// @name:zh-tw  Twitter Ã½ówÏÂİd
+// @name:zh-cn  Twitter åª’ä½“ä¸‹è½½
+// @name:zh-tw  Twitter åª’é«”ä¸‹è¼‰
 // @description    Save Video/Photo by One-Click.
-// @description:ja ¥ï¥ó¥¯¥ê¥Ã¥¯¤Ç„Ó»­?»­Ïñ¤ò±£´æ¤¹¤ë¡£
-// @description:zh-cn Ò»¼ü±£´æÊÓÆµ/Í¼Æ¬
-// @description:zh-tw Ò»æI±£´æÒ•îl/ˆDÆ¬
-// @version     1.27-Mod-20240408(1.ĞŞ¸ÄÏÂÔØÎÄ¼şÃû¸ñÊ½)
-// @author      AMANE£¨Mod by heckles£©
+// @description:ja ãƒ¯ãƒ³ã‚¯ãƒªãƒƒã‚¯ã§å‹•ç”»?ç”»åƒã‚’ä¿å­˜ã™ã‚‹ã€‚
+// @description:zh-cn ä¸€é”®ä¿å­˜è§†é¢‘/å›¾ç‰‡
+// @description:zh-tw ä¸€éµä¿å­˜è¦–é »/åœ–ç‰‡
+// @version     1.27-Mod-20240408(1.ä¿®æ”¹ä¸‹è½½æ–‡ä»¶åæ ¼å¼)
+// @author      AMANEï¼ˆMod by hecklesï¼‰
 // @namespace   none
 // @match       https://twitter.com/*
 // @match       https://mobile.twitter.com/*
@@ -25,75 +25,75 @@
 /* jshint esversion: 8 */
 
 /**
- * Éú³ÉÍÆÌØÎÄ¼şÃû¸ñÊ½
+ * ç”Ÿæˆæ¨ç‰¹æ–‡ä»¶åæ ¼å¼
  *
- * ¸ÃÎÄ¼şÃû¸ñÊ½ÓÃÓÚ±êÊ¶ÍÆÌØÓÃ»§¡¢·¢²¼ÈÕÆÚÊ±¼ä¡¢×´Ì¬IDºÍÎÄ¼şÀàĞÍ¡£
- * Ëü²ÉÓÃÌØ¶¨µÄ×Ö·û´®Ä£°å£¬Í¨¹ıÌæ»»Ä£°åÖĞµÄÕ¼Î»·ûÀ´Éú³É×îÖÕµÄÎÄ¼şÃû¡£
+ * è¯¥æ–‡ä»¶åæ ¼å¼ç”¨äºæ ‡è¯†æ¨ç‰¹ç”¨æˆ·ã€å‘å¸ƒæ—¥æœŸæ—¶é—´ã€çŠ¶æ€IDå’Œæ–‡ä»¶ç±»å‹ã€‚
+ * å®ƒé‡‡ç”¨ç‰¹å®šçš„å­—ç¬¦ä¸²æ¨¡æ¿ï¼Œé€šè¿‡æ›¿æ¢æ¨¡æ¿ä¸­çš„å ä½ç¬¦æ¥ç”Ÿæˆæœ€ç»ˆçš„æ–‡ä»¶åã€‚
  *
- * @param {string} userName ÓÃ»§Ãû
- * @param {number} userId ÓÃ»§ID
- * @param {string} dateTime ·¢²¼µÄÈÕÆÚºÍÊ±¼ä£¬Ó¦Îª·ûºÏÌØ¶¨¸ñÊ½µÄ×Ö·û´®
- * @param {string} statusId ×´Ì¬ID£¬¼´ÍÆÎÄµÄÎ¨Ò»±êÊ¶·û
- * @param {string} fileType ÎÄ¼şÀàĞÍ£¬Èçjpg¡¢pngµÈ
- * @returns {string} ¸ù¾İÌá¹©µÄ²ÎÊıÉú³ÉµÄÍÆÌØÎÄ¼şÃû
+ * @param {string} userName ç”¨æˆ·å
+ * @param {number} userId ç”¨æˆ·ID
+ * @param {string} dateTime å‘å¸ƒçš„æ—¥æœŸå’Œæ—¶é—´ï¼Œåº”ä¸ºç¬¦åˆç‰¹å®šæ ¼å¼çš„å­—ç¬¦ä¸²
+ * @param {string} statusId çŠ¶æ€IDï¼Œå³æ¨æ–‡çš„å”¯ä¸€æ ‡è¯†ç¬¦
+ * @param {string} fileType æ–‡ä»¶ç±»å‹ï¼Œå¦‚jpgã€pngç­‰
+ * @returns {string} æ ¹æ®æä¾›çš„å‚æ•°ç”Ÿæˆçš„æ¨ç‰¹æ–‡ä»¶å
  */
 const filename =
   //  "twitter_{user-name}(@{user-id})_{date-time}_{status-id}_{file-type}";
   "{date-time}_twitter_{user-name}(@{user-id})_{status-id}_{file-type}";
 /**
- * TMD ÊÇÒ»¸ö·â×°ÁË¸÷ÖÖ¹¦ÄÜµÄ×ÔÖ´ĞĞº¯Êı£¬ÓÃÓÚÊµÏÖÓïÑÔ»·¾³ÅäÖÃ¡¢´æ´¢¹ÜÀí¡¢Ãô¸ĞÄÚÈİÏÔÊ¾¿ØÖÆµÈ¡£
+ * TMD æ˜¯ä¸€ä¸ªå°è£…äº†å„ç§åŠŸèƒ½çš„è‡ªæ‰§è¡Œå‡½æ•°ï¼Œç”¨äºå®ç°è¯­è¨€ç¯å¢ƒé…ç½®ã€å­˜å‚¨ç®¡ç†ã€æ•æ„Ÿå†…å®¹æ˜¾ç¤ºæ§åˆ¶ç­‰ã€‚
  * */
 const TMD = (function () {
   let lang, host, history, show_sensitive, is_tweetdeck;
-  // ·µ»ØÒ»¸ö°üº¬¸÷ÖÖ¹¦ÄÜµÄ·½·¨µÄ¶ÔÏó
+  // è¿”å›ä¸€ä¸ªåŒ…å«å„ç§åŠŸèƒ½çš„æ–¹æ³•çš„å¯¹è±¡
   return {
     /**
-     * ³õÊ¼»¯º¯Êı£¬¸ºÔğÉèÖÃÓïÑÔ¡¢¼ì²â»·¾³¡¢³õÊ¼»¯´æ´¢¼°ÉèÖÃ½çÃæÑùÊ½µÈ¡£
+     * åˆå§‹åŒ–å‡½æ•°ï¼Œè´Ÿè´£è®¾ç½®è¯­è¨€ã€æ£€æµ‹ç¯å¢ƒã€åˆå§‹åŒ–å­˜å‚¨åŠè®¾ç½®ç•Œé¢æ ·å¼ç­‰ã€‚
      * */
     init: async function () {
-      // ×¢²áÓÒ¼ü²Ëµ¥ÃüÁî£¬¸ù¾İÓÃ»§ÓïÑÔÉèÖÃÏÔÊ¾µÄÎÄ±¾
+      // æ³¨å†Œå³é”®èœå•å‘½ä»¤ï¼Œæ ¹æ®ç”¨æˆ·è¯­è¨€è®¾ç½®æ˜¾ç¤ºçš„æ–‡æœ¬
       GM_registerMenuCommand(
         (this.language[navigator.language] || this.language.en).settings,
         this.settings
       );
       lang =
-        this.language[document.querySelector("html").lang] || this.language.en; // ÉèÖÃµ±Ç°ÓïÑÔ
-      host = location.hostname; // »ñÈ¡µ±Ç°ÓòÃû
-      is_tweetdeck = host.indexOf("tweetdeck") >= 0; // ¼ì²éÊÇ·ñÔÚTweetDeck»·¾³ÖĞ
-      history = this.storage_obsolete(); // ÊÔÍ¼´Ó¾É´æ´¢ÖĞ»ñÈ¡ÀúÊ·¼ÇÂ¼
+        this.language[document.querySelector("html").lang] || this.language.en; // è®¾ç½®å½“å‰è¯­è¨€
+      host = location.hostname; // è·å–å½“å‰åŸŸå
+      is_tweetdeck = host.indexOf("tweetdeck") >= 0; // æ£€æŸ¥æ˜¯å¦åœ¨TweetDeckç¯å¢ƒä¸­
+      history = this.storage_obsolete(); // è¯•å›¾ä»æ—§å­˜å‚¨ä¸­è·å–å†å²è®°å½•
 
-      // Èç¹û´æÔÚÀúÊ·¼ÇÂ¼£¬ÔòÊ¹ÓÃ¾É´æ´¢»úÖÆ£¬·ñÔòÊ¹ÓÃĞÂµÄ´æ´¢»úÖÆ
+      // å¦‚æœå­˜åœ¨å†å²è®°å½•ï¼Œåˆ™ä½¿ç”¨æ—§å­˜å‚¨æœºåˆ¶ï¼Œå¦åˆ™ä½¿ç”¨æ–°çš„å­˜å‚¨æœºåˆ¶
       if (history.length) {
         this.storage(history);
         this.storage_obsolete(true);
-      } else history = await this.storage(); // Òì²½»ñÈ¡´æ´¢µÄÀúÊ·¼ÇÂ¼
+      } else history = await this.storage(); // å¼‚æ­¥è·å–å­˜å‚¨çš„å†å²è®°å½•
 
-      show_sensitive = GM_getValue("show_sensitive", false); // »ñÈ¡ÊÇ·ñÏÔÊ¾Ãô¸ĞÄÚÈİµÄÉèÖÃ
-      // ¶¯Ì¬²åÈëÑùÊ½±í£¬¸ù¾İÊÇ·ñÏÔÊ¾Ãô¸ĞÄÚÈİ¾ö¶¨ÊÇ·ñÓ¦ÓÃ¶îÍâµÄÑùÊ½
+      show_sensitive = GM_getValue("show_sensitive", false); // è·å–æ˜¯å¦æ˜¾ç¤ºæ•æ„Ÿå†…å®¹çš„è®¾ç½®
+      // åŠ¨æ€æ’å…¥æ ·å¼è¡¨ï¼Œæ ¹æ®æ˜¯å¦æ˜¾ç¤ºæ•æ„Ÿå†…å®¹å†³å®šæ˜¯å¦åº”ç”¨é¢å¤–çš„æ ·å¼
       document.head.insertAdjacentHTML(
         "beforeend",
         "<style>" + this.css + (show_sensitive ? this.css_ss : "") + "</style>"
       );
 
-      // Ê¹ÓÃMutationObserver¼àÌıÎÄµµ±ä¶¯£¬ÒÔÊµÊ±´¦ÀíĞÂÔö½Úµã
+      // ä½¿ç”¨MutationObserverç›‘å¬æ–‡æ¡£å˜åŠ¨ï¼Œä»¥å®æ—¶å¤„ç†æ–°å¢èŠ‚ç‚¹
       let observer = new MutationObserver((ms) =>
         ms.forEach((m) => m.addedNodes.forEach((node) => this.detect(node)))
       );
-      observer.observe(document.body, { childList: true, subtree: true }); // Æô¶¯¹Û²ìÕß
+      observer.observe(document.body, { childList: true, subtree: true }); // å¯åŠ¨è§‚å¯Ÿè€…
     },
     /**
-     * ¼ì²â¸ø¶¨µÄ½Úµã£¬²¢¸ù¾İÆäÀàĞÍÌí¼ÓÏàÓ¦µÄ°´Å¥¡£
-     * @param {HTMLElement} node - ĞèÒª½øĞĞ¼ì²âµÄDOM½Úµã¡£
+     * æ£€æµ‹ç»™å®šçš„èŠ‚ç‚¹ï¼Œå¹¶æ ¹æ®å…¶ç±»å‹æ·»åŠ ç›¸åº”çš„æŒ‰é’®ã€‚
+     * @param {HTMLElement} node - éœ€è¦è¿›è¡Œæ£€æµ‹çš„DOMèŠ‚ç‚¹ã€‚
      */
     detect: function (node) {
-      // ¼ì²éµ±Ç°½Úµã»òÆä×Ó½Úµã»ò×î½üµÄ×æÏÈ½ÚµãÊÇ·ñÎªARTICLE±êÇ©£¬Èç¹ûÊÇ£¬ÔòÎª¸ÃÎÄÕÂ½ÚµãÌí¼Ó°´Å¥
+      // æ£€æŸ¥å½“å‰èŠ‚ç‚¹æˆ–å…¶å­èŠ‚ç‚¹æˆ–æœ€è¿‘çš„ç¥–å…ˆèŠ‚ç‚¹æ˜¯å¦ä¸ºARTICLEæ ‡ç­¾ï¼Œå¦‚æœæ˜¯ï¼Œåˆ™ä¸ºè¯¥æ–‡ç« èŠ‚ç‚¹æ·»åŠ æŒ‰é’®
       let article =
         (node.tagName == "ARTICLE" && node) ||
         (node.tagName == "DIV" &&
           (node.querySelector("article") || node.closest("article")));
       if (article) this.addButtonTo(article);
 
-      // ¼ì²éµ±Ç°½ÚµãÊÇ·ñÎªLI±êÇ©ÇÒÆä½ÇÉ«Îªlistitem£¬»òÈç¹ûµ±Ç°½ÚµãÎªDIV±êÇ©Ôò²éÕÒËùÓĞµÄli[role="listitem"]×Ó½Úµã£¬ÈôÊÇ£¬ÔòÎªÕâĞ©Ã½ÌåÁĞ±íÏîÌí¼Ó°´Å¥
+      // æ£€æŸ¥å½“å‰èŠ‚ç‚¹æ˜¯å¦ä¸ºLIæ ‡ç­¾ä¸”å…¶è§’è‰²ä¸ºlistitemï¼Œæˆ–å¦‚æœå½“å‰èŠ‚ç‚¹ä¸ºDIVæ ‡ç­¾åˆ™æŸ¥æ‰¾æ‰€æœ‰çš„li[role="listitem"]å­èŠ‚ç‚¹ï¼Œè‹¥æ˜¯ï¼Œåˆ™ä¸ºè¿™äº›åª’ä½“åˆ—è¡¨é¡¹æ·»åŠ æŒ‰é’®
       let listitems =
         (node.tagName == "LI" &&
           node.getAttribute("role") == "listitem" && [node]) ||
@@ -101,30 +101,30 @@ const TMD = (function () {
       if (listitems) this.addButtonToMedia(listitems);
     },
     /**
-     * ÏòÖ¸¶¨µÄÎÄÕÂÖĞÌí¼ÓÏÂÔØ°´Å¥¡£
-     * @param {HTMLElement} article - ĞèÒªÌí¼Ó°´Å¥µÄÎÄÕÂÔªËØ¡£
+     * å‘æŒ‡å®šçš„æ–‡ç« ä¸­æ·»åŠ ä¸‹è½½æŒ‰é’®ã€‚
+     * @param {HTMLElement} article - éœ€è¦æ·»åŠ æŒ‰é’®çš„æ–‡ç« å…ƒç´ ã€‚
      */
     addButtonTo: function (article) {
-      // Èç¹ûÒÑ¾­¼ì²âµ½£¬Ôò²»ÔÙÖØ¸´Ìí¼Ó
+      // å¦‚æœå·²ç»æ£€æµ‹åˆ°ï¼Œåˆ™ä¸å†é‡å¤æ·»åŠ 
       if (article.dataset.detected) return;
       article.dataset.detected = "true";
 
-      // ¶¨ÒåÓÃÓÚÑ¡ÔñÃ½ÌåÔªËØµÄÑ¡ÔñÆ÷
+      // å®šä¹‰ç”¨äºé€‰æ‹©åª’ä½“å…ƒç´ çš„é€‰æ‹©å™¨
       let media_selector = [
         'a[href*="/photo/1"]',
         'div[role="progressbar"]',
         'div[data-testid="playButton"]',
-        'a[href="/settings/content_you_see"]', // Òş²ØµÄÄÚÈİ
-        "div.media-image-container", // ÓÃÓÚTweetDeck
-        "div.media-preview-container", // ÓÃÓÚTweetDeck
-        'div[aria-labelledby]>div:first-child>div[role="button"][tabindex="0"]', // ÒôÆµ£¨ÊµÑéĞÔ£©
+        'a[href="/settings/content_you_see"]', // éšè—çš„å†…å®¹
+        "div.media-image-container", // ç”¨äºTweetDeck
+        "div.media-preview-container", // ç”¨äºTweetDeck
+        'div[aria-labelledby]>div:first-child>div[role="button"][tabindex="0"]', // éŸ³é¢‘ï¼ˆå®éªŒæ€§ï¼‰
       ];
 
-      // ³¢ÊÔ¸ù¾İÑ¡ÔñÆ÷ÕÒµ½Ã½ÌåÔªËØ
+      // å°è¯•æ ¹æ®é€‰æ‹©å™¨æ‰¾åˆ°åª’ä½“å…ƒç´ 
       let media = article.querySelector(media_selector.join(","));
 
       if (media) {
-        // ´ÓÎÄÕÂÖĞÌáÈ¡×´Ì¬ID
+        // ä»æ–‡ç« ä¸­æå–çŠ¶æ€ID
         let status_id = article
           .querySelector('a[href*="/status/"]')
           .href.split("/status/")
@@ -132,22 +132,22 @@ const TMD = (function () {
           .split("/")
           .shift();
 
-        // ²éÕÒ°´Å¥×é»òÕß²Ù×÷ÁĞ±í
+        // æŸ¥æ‰¾æŒ‰é’®ç»„æˆ–è€…æ“ä½œåˆ—è¡¨
         let btn_group = article.querySelector(
           'div[role="group"]:last-of-type, ul.tweet-actions, ul.tweet-detail-actions'
         );
 
-        // ÔÚ°´Å¥×éÖĞÕÒµ½·ÖÏí°´Å¥µÄ¸¸½Úµã
+        // åœ¨æŒ‰é’®ç»„ä¸­æ‰¾åˆ°åˆ†äº«æŒ‰é’®çš„çˆ¶èŠ‚ç‚¹
         let btn_share = Array.from(
           btn_group.querySelectorAll(
             ":scope>div>div, li.tweet-action-item>a, li.tweet-detail-action-item>a"
           )
         ).pop().parentNode;
 
-        // ¿ËÂ¡·ÖÏí°´Å¥²¢´´½¨ÏÂÔØ°´Å¥
+        // å…‹éš†åˆ†äº«æŒ‰é’®å¹¶åˆ›å»ºä¸‹è½½æŒ‰é’®
         let btn_down = btn_share.cloneNode(true);
 
-        // ¸ù¾İÊÇ·ñÔÚTweetDeckÖĞ£¬¶Ô°´Å¥½øĞĞ²»Í¬µÄÉèÖÃ
+        // æ ¹æ®æ˜¯å¦åœ¨TweetDeckä¸­ï¼Œå¯¹æŒ‰é’®è¿›è¡Œä¸åŒçš„è®¾ç½®
         if (is_tweetdeck) {
           btn_down.firstElementChild.innerHTML =
             '<svg viewBox="0 0 24 24" style="width: 18px; height: 18px;">' +
@@ -159,10 +159,10 @@ const TMD = (function () {
           btn_down.querySelector("svg").innerHTML = this.svg;
         }
 
-        // ¼ì²éÊÇ·ñÒÑ¾­ÏÂÔØ
+        // æ£€æŸ¥æ˜¯å¦å·²ç»ä¸‹è½½
         let is_exist = history.indexOf(status_id) >= 0;
 
-        // ÉèÖÃ°´Å¥×´Ì¬
+        // è®¾ç½®æŒ‰é’®çŠ¶æ€
         this.status(btn_down, "tmd-down");
         this.status(
           btn_down,
@@ -170,13 +170,13 @@ const TMD = (function () {
           is_exist ? lang.completed : lang.download
         );
 
-        // ÔÚ°´Å¥×éÖĞ²åÈëÏÂÔØ°´Å¥
+        // åœ¨æŒ‰é’®ç»„ä¸­æ’å…¥ä¸‹è½½æŒ‰é’®
         btn_group.insertBefore(btn_down, btn_share.nextSibling);
 
-        // °ó¶¨µã»÷ÊÂ¼ş
+        // ç»‘å®šç‚¹å‡»äº‹ä»¶
         btn_down.onclick = () => this.click(btn_down, status_id, is_exist);
 
-        // Èç¹ûÏÔÊ¾Ãô¸ĞÄÚÈİ£¬×Ô¶¯µã»÷ÏÔÊ¾°´Å¥
+        // å¦‚æœæ˜¾ç¤ºæ•æ„Ÿå†…å®¹ï¼Œè‡ªåŠ¨ç‚¹å‡»æ˜¾ç¤ºæŒ‰é’®
         if (show_sensitive) {
           let btn_show = article.querySelector(
             'div[aria-labelledby] div[role="button"][tabindex="0"]:not([data-testid]) > div[dir] > span > span'
@@ -185,7 +185,7 @@ const TMD = (function () {
         }
       }
 
-      // ´¦ÀíÎÄÕÂÖĞµÄ¶àÕÅÍ¼Æ¬
+      // å¤„ç†æ–‡ç« ä¸­çš„å¤šå¼ å›¾ç‰‡
       let imgs = article.querySelectorAll('a[href*="/photo/"]');
       if (imgs.length > 1) {
         let status_id = article
@@ -200,7 +200,7 @@ const TMD = (function () {
         ).pop().parentNode;
 
         imgs.forEach((img) => {
-          // ÎªÃ¿ÕÅÍ¼Æ¬Éú³É¶ÀÁ¢µÄÏÂÔØ°´Å¥
+          // ä¸ºæ¯å¼ å›¾ç‰‡ç”Ÿæˆç‹¬ç«‹çš„ä¸‹è½½æŒ‰é’®
           let index = img.href.split("/status/").pop().split("/").pop();
           let is_exist = history.indexOf(status_id) >= 0;
           let btn_down = document.createElement("div");
@@ -212,7 +212,7 @@ const TMD = (function () {
           this.status(btn_down, "download");
           img.parentNode.appendChild(btn_down);
 
-          // °ó¶¨µã»÷ÊÂ¼ş£¬·ÀÖ¹Ä¬ÈÏĞĞÎª
+          // ç»‘å®šç‚¹å‡»äº‹ä»¶ï¼Œé˜²æ­¢é»˜è®¤è¡Œä¸º
           btn_down.onclick = (e) => {
             e.preventDefault();
             this.click(btn_down, status_id, is_exist, index);
@@ -221,16 +221,16 @@ const TMD = (function () {
       }
     },
     /**
-     * ÎªÃ½ÌåÁĞ±íÏîÌí¼ÓÏÂÔØ°´Å¥
-     * @param {Array} listitems - °üº¬Ã½ÌåĞÅÏ¢µÄÁĞ±íÏîÊı×é
+     * ä¸ºåª’ä½“åˆ—è¡¨é¡¹æ·»åŠ ä¸‹è½½æŒ‰é’®
+     * @param {Array} listitems - åŒ…å«åª’ä½“ä¿¡æ¯çš„åˆ—è¡¨é¡¹æ•°ç»„
      */
     addButtonToMedia: function (listitems) {
       listitems.forEach((li) => {
-        // Ìø¹ıÒÑ¾­¼ì²â¹ıµÄÁĞ±íÏî
+        // è·³è¿‡å·²ç»æ£€æµ‹è¿‡çš„åˆ—è¡¨é¡¹
         if (li.dataset.detected) return;
         li.dataset.detected = "true";
 
-        // ÌáÈ¡×´Ì¬ID
+        // æå–çŠ¶æ€ID
         let status_id = li
           .querySelector('a[href*="/status/"]')
           .href.split("/status/")
@@ -238,10 +238,10 @@ const TMD = (function () {
           .split("/")
           .shift();
 
-        // ¼ì²éÀúÊ·¼ÇÂ¼ÖĞÊÇ·ñÒÑ´æÔÚ¸Ã×´Ì¬ID
+        // æ£€æŸ¥å†å²è®°å½•ä¸­æ˜¯å¦å·²å­˜åœ¨è¯¥çŠ¶æ€ID
         let is_exist = history.indexOf(status_id) >= 0;
 
-        // ´´½¨ÏÂÔØ°´Å¥
+        // åˆ›å»ºä¸‹è½½æŒ‰é’®
         let btn_down = document.createElement("div");
         btn_down.innerHTML =
           '<div><div><svg viewBox="0 0 24 24" style="width: 18px; height: 18px;">' +
@@ -249,62 +249,62 @@ const TMD = (function () {
           "</svg></div></div>";
         btn_down.classList.add("tmd-down", "tmd-media");
 
-        // ÉèÖÃ°´Å¥×´Ì¬
+        // è®¾ç½®æŒ‰é’®çŠ¶æ€
         this.status(
           btn_down,
           is_exist ? "completed" : "download",
           is_exist ? lang.completed : lang.download
         );
 
-        // ½«°´Å¥Ìí¼Óµ½ÁĞ±íÏîÖĞ
+        // å°†æŒ‰é’®æ·»åŠ åˆ°åˆ—è¡¨é¡¹ä¸­
         li.appendChild(btn_down);
 
-        // ÉèÖÃ°´Å¥µã»÷ÊÂ¼ş´¦Àíº¯Êı
+        // è®¾ç½®æŒ‰é’®ç‚¹å‡»äº‹ä»¶å¤„ç†å‡½æ•°
         btn_down.onclick = () => this.click(btn_down, status_id, is_exist);
       });
     },
     /**
-     * ´¦ÀíÏÂÔØ°´Å¥µã»÷ÊÂ¼ş
-     * @param {Object} btn - ±»µã»÷µÄ°´Å¥¶ÔÏó
-     * @param {String} status_id - Ã½ÌåµÄ×´Ì¬ID
-     * @param {Boolean} is_exist - Ö¸Ê¾¸ÃÃ½ÌåÊÇ·ñÒÑ´æÔÚÓÚÀúÊ·¼ÇÂ¼ÖĞ
+     * å¤„ç†ä¸‹è½½æŒ‰é’®ç‚¹å‡»äº‹ä»¶
+     * @param {Object} btn - è¢«ç‚¹å‡»çš„æŒ‰é’®å¯¹è±¡
+     * @param {String} status_id - åª’ä½“çš„çŠ¶æ€ID
+     * @param {Boolean} is_exist - æŒ‡ç¤ºè¯¥åª’ä½“æ˜¯å¦å·²å­˜åœ¨äºå†å²è®°å½•ä¸­
      */
     click: async function (btn, status_id, is_exist, index) {
-      // Èç¹û°´Å¥´¦ÓÚ¼ÓÔØ×´Ì¬£¬Ôò²»½øĞĞÈÎºÎ²Ù×÷
+      // å¦‚æœæŒ‰é’®å¤„äºåŠ è½½çŠ¶æ€ï¼Œåˆ™ä¸è¿›è¡Œä»»ä½•æ“ä½œ
       if (btn.classList.contains("loading")) return;
 
-      // ÉèÖÃ°´Å¥Îª¼ÓÔØ×´Ì¬
+      // è®¾ç½®æŒ‰é’®ä¸ºåŠ è½½çŠ¶æ€
       this.status(btn, "loading");
 
-      // ¶ÁÈ¡²¢´¦ÀíÎÄ¼şÃûºÍ±£´æÀúÊ·¼ÇÂ¼µÄÉèÖÃ
+      // è¯»å–å¹¶å¤„ç†æ–‡ä»¶åå’Œä¿å­˜å†å²è®°å½•çš„è®¾ç½®
       let out = (await GM_getValue("filename", filename)).split("\n").join("");
       let save_history = await GM_getValue("save_history", true);
 
-      // »ñÈ¡Ã½ÌåµÄÏêÏ¸ĞÅÏ¢
+      // è·å–åª’ä½“çš„è¯¦ç»†ä¿¡æ¯
       let json = await this.fetchJson(status_id);
       let tweet = json.legacy;
       let user = json.core.user_results.result.legacy;
 
-      // ¶¨Òå²¢´¦ÀíÎÄ¼şÃûÖĞ²»ÔÊĞí³öÏÖµÄ×Ö·û
+      // å®šä¹‰å¹¶å¤„ç†æ–‡ä»¶åä¸­ä¸å…è®¸å‡ºç°çš„å­—ç¬¦
       let invalid_chars = {
-        "\\": "£Ü",
-        "/": "£¯",
-        "|": "£ü",
-        "<": "£¼",
-        ">": "£¾",
-        ":": "£º",
-        "*": "£ª",
-        "?": "£¿",
-        '"': "£¢",
+        "\\": "ï¼¼",
+        "/": "ï¼",
+        "|": "ï½œ",
+        "<": "ï¼œ",
+        ">": "ï¼",
+        ":": "ï¼š",
+        "*": "ï¼Š",
+        "?": "ï¼Ÿ",
+        '"': "ï¼‚",
         "\u200b": "",
         "\u200c": "",
         "\u200d": "",
         "\u2060": "",
         "\ufeff": "",
-        "?": "",
+        "ğŸ”": "",
       };
 
-      // ´¦ÀíÊä³öÎÄ¼şÃûÖĞµÄÈÕÆÚºÍÊ±¼ä²¿·Ö
+      // å¤„ç†è¾“å‡ºæ–‡ä»¶åä¸­çš„æ—¥æœŸå’Œæ—¶é—´éƒ¨åˆ†
       let datetime = out.match(/{date-time(-local)?:[^{}]+}/)
         ? out
           .match(/{date-time(?:-local)?:([^{}]+)}/)[1]
@@ -312,11 +312,11 @@ const TMD = (function () {
         //        : "YYYYMMDD-hhmmss";
         : "YYYY-MM-DD hh-mm-ss";
 
-      // ×¼±¸ÏÂÔØĞÅÏ¢
+      // å‡†å¤‡ä¸‹è½½ä¿¡æ¯
       let info = {};
       info["status-id"] = status_id;
       info["user-name"] = user.name.replace(
-        /([\\/|*?:"]|[\u200b-\u200d\u2060\ufeff]|?)/g,
+        /([\\/|*?:"]|[\u200b-\u200d\u2060\ufeff]|ğŸ”)/g,
         (v) => invalid_chars[v]
       );
       info["user-id"] = user.screen_name;
@@ -335,7 +335,7 @@ const TMD = (function () {
           (v) => invalid_chars[v]
         );
 
-      // ´¦ÀíÃ½ÌåÎÄ¼şÏÂÔØ
+      // å¤„ç†åª’ä½“æ–‡ä»¶ä¸‹è½½
       let medias = tweet.extended_entities && tweet.extended_entities.media;
       if (index) medias = [medias[index - 1]];
 
@@ -343,7 +343,7 @@ const TMD = (function () {
         let tasks = medias.length;
         let tasks_result = [];
         medias.forEach((media, i) => {
-          // ×¼±¸Ã¿¸öÃ½ÌåÎÄ¼şµÄÏÂÔØĞÅÏ¢
+          // å‡†å¤‡æ¯ä¸ªåª’ä½“æ–‡ä»¶çš„ä¸‹è½½ä¿¡æ¯
           info.url =
             media.type == "photo"
               ? media.media_url_https + ":orig"
@@ -362,7 +362,7 @@ const TMD = (function () {
             ".{file-ext}"
           ).replace(/{([^{}:]+)(:[^{}]+)?}/g, (match, name) => info[name]);
 
-          // Ìí¼ÓÏÂÔØÈÎÎñ
+          // æ·»åŠ ä¸‹è½½ä»»åŠ¡
           this.downloader.add({
             url: info.url,
             name: info.out,
@@ -392,34 +392,34 @@ const TMD = (function () {
           });
         });
       } else {
-        // Èç¹ûÎ´ÕÒµ½Ã½ÌåÎÄ¼ş£¬ÔòÉèÖÃ°´Å¥×´Ì¬ÎªÊ§°Ü
+        // å¦‚æœæœªæ‰¾åˆ°åª’ä½“æ–‡ä»¶ï¼Œåˆ™è®¾ç½®æŒ‰é’®çŠ¶æ€ä¸ºå¤±è´¥
         this.status(btn, "failed", "MEDIA_NOT_FOUND");
       }
     },
     /**
-     * ¸üĞÂ°´Å¥×´Ì¬¡£
-     * @param {HTMLElement} btn - Òª¸üĞÂ×´Ì¬µÄ°´Å¥ÔªËØ¡£
-     * @param {string} css - ÒªÌí¼ÓµÄCSSÀà£¨¿ÉÑ¡£©¡£
-     * @param {string} title - °´Å¥µÄ±êÌâ£¨¿ÉÑ¡£©¡£
-     * @param {string} style - ÒªÓ¦ÓÃµÄÄÚÁªÑùÊ½£¨¿ÉÑ¡£©¡£
+     * æ›´æ–°æŒ‰é’®çŠ¶æ€ã€‚
+     * @param {HTMLElement} btn - è¦æ›´æ–°çŠ¶æ€çš„æŒ‰é’®å…ƒç´ ã€‚
+     * @param {string} css - è¦æ·»åŠ çš„CSSç±»ï¼ˆå¯é€‰ï¼‰ã€‚
+     * @param {string} title - æŒ‰é’®çš„æ ‡é¢˜ï¼ˆå¯é€‰ï¼‰ã€‚
+     * @param {string} style - è¦åº”ç”¨çš„å†…è”æ ·å¼ï¼ˆå¯é€‰ï¼‰ã€‚
      */
     status: function (btn, css, title, style) {
-      // Èç¹ûÌá¹©ÁËCSSÀà£¬ÔòÒÆ³ı¾ÉµÄÀà²¢Ìí¼ÓĞÂµÄÀà
+      // å¦‚æœæä¾›äº†CSSç±»ï¼Œåˆ™ç§»é™¤æ—§çš„ç±»å¹¶æ·»åŠ æ–°çš„ç±»
       if (css) {
         btn.classList.remove("download", "completed", "loading", "failed");
         btn.classList.add(css);
       }
-      // Èç¹ûÌá¹©ÁË±êÌâ£¬Ôò¸üĞÂ°´Å¥±êÌâ
+      // å¦‚æœæä¾›äº†æ ‡é¢˜ï¼Œåˆ™æ›´æ–°æŒ‰é’®æ ‡é¢˜
       if (title) btn.title = title;
-      // Èç¹ûÌá¹©ÁËÑùÊ½£¬Ôò¸üĞÂ°´Å¥µÄÄÚÁªÑùÊ½
+      // å¦‚æœæä¾›äº†æ ·å¼ï¼Œåˆ™æ›´æ–°æŒ‰é’®çš„å†…è”æ ·å¼
       if (style) btn.style.cssText = style;
     },
 
     /**
-     * µ¯³öÉèÖÃ¶Ô»°¿ò¡£
+     * å¼¹å‡ºè®¾ç½®å¯¹è¯æ¡†ã€‚
      */
     settings: async function () {
-      // ´´½¨ÔªËØµÄ¹¤¾ßº¯Êı
+      // åˆ›å»ºå…ƒç´ çš„å·¥å…·å‡½æ•°
       const $element = (parent, tag, style, content, css) => {
         let el = document.createElement(tag);
         if (style) el.style.cssText = style;
@@ -434,13 +434,13 @@ const TMD = (function () {
         return el;
       };
 
-      // ´´½¨ÉèÖÃ¶Ô»°¿òµÄÈİÆ÷ºÍ»ù±¾ÑùÊ½
+      // åˆ›å»ºè®¾ç½®å¯¹è¯æ¡†çš„å®¹å™¨å’ŒåŸºæœ¬æ ·å¼
       let wapper = $element(
         document.body,
         "div",
         "position: fixed; left: 0px; top: 0px; width: 100%; height: 100%; background-color: #0009; z-index: 10;"
       );
-      // ´¦Àí¹Ø±ÕÉèÖÃ¶Ô»°¿òµÄÂß¼­
+      // å¤„ç†å…³é—­è®¾ç½®å¯¹è¯æ¡†çš„é€»è¾‘
       let wapper_close;
       wapper.onmousedown = (e) => {
         wapper_close = e.target == wapper;
@@ -449,7 +449,7 @@ const TMD = (function () {
         if (wapper_close && e.target == wapper) wapper.remove();
       };
 
-      // ´´½¨²¢ÉèÖÃ¶Ô»°¿òÄÚÈİ£¬°üÀ¨±êÌâ¡¢Ñ¡ÏîµÈ
+      // åˆ›å»ºå¹¶è®¾ç½®å¯¹è¯æ¡†å†…å®¹ï¼ŒåŒ…æ‹¬æ ‡é¢˜ã€é€‰é¡¹ç­‰
       let dialog = $element(
         wapper,
         "div",
@@ -467,7 +467,7 @@ const TMD = (function () {
         "margin: 10px; border: 1px solid #ccc; border-radius: 5px;"
       );
 
-      // ±£´æÀúÊ·¼ÇÂ¼µÄÉèÖÃ
+      // ä¿å­˜å†å²è®°å½•çš„è®¾ç½®
       let save_history_label = $element(
         options,
         "label",
@@ -485,7 +485,7 @@ const TMD = (function () {
         GM_setValue("save_history", save_history_input.checked);
       };
 
-      // Çå³ıÀúÊ·¼ÇÂ¼µÄ°´Å¥ºÍÂß¼­
+      // æ¸…é™¤å†å²è®°å½•çš„æŒ‰é’®å’Œé€»è¾‘
       let clear_history = $element(
         save_history_label,
         "label",
@@ -499,7 +499,7 @@ const TMD = (function () {
         }
       };
 
-      // ÏÔÊ¾Ãô¸ĞÄÚÈİµÄÉèÖÃ
+      // æ˜¾ç¤ºæ•æ„Ÿå†…å®¹çš„è®¾ç½®
       let show_sensitive_label = $element(
         options,
         "label",
@@ -518,7 +518,7 @@ const TMD = (function () {
         GM_setValue("show_sensitive", show_sensitive);
       };
 
-      // ÎÄ¼şÃûÄ£Ê½ÉèÖÃ
+      // æ–‡ä»¶åæ¨¡å¼è®¾ç½®
       let filename_div = $element(
         dialog,
         "div",
@@ -565,7 +565,7 @@ const TMD = (function () {
         };
       });
 
-      // ±£´æÉèÖÃµÄ°´Å¥¼°ÆäÂß¼­
+      // ä¿å­˜è®¾ç½®çš„æŒ‰é’®åŠå…¶é€»è¾‘
       let btn_save = $element(
         title,
         "label",
@@ -579,14 +579,14 @@ const TMD = (function () {
       };
     },
     /**
-     * Òì²½»ñÈ¡Ö¸¶¨×´Ì¬IDµÄJSONÊı¾İ
-     * @param {string} status_id - ´ı²éÑ¯µÄ×´Ì¬ID
-     * @returns {Promise<Object>} ·µ»ØÒ»¸öPromise¶ÔÏó£¬°üº¬Ö¸¶¨ÍÆÎÄµÄÏêÏ¸ĞÅÏ¢
+     * å¼‚æ­¥è·å–æŒ‡å®šçŠ¶æ€IDçš„JSONæ•°æ®
+     * @param {string} status_id - å¾…æŸ¥è¯¢çš„çŠ¶æ€ID
+     * @returns {Promise<Object>} è¿”å›ä¸€ä¸ªPromiseå¯¹è±¡ï¼ŒåŒ…å«æŒ‡å®šæ¨æ–‡çš„è¯¦ç»†ä¿¡æ¯
      */
     fetchJson: async function (status_id) {
-      // ¶¨Òå»ù´¡URL
+      // å®šä¹‰åŸºç¡€URL
       let base_url = `https://${host}/i/api/graphql/NmCeCgkVlsRGS1cAwqtgmw/TweetDetail`;
-      // ¶¨Òå²éÑ¯±äÁ¿
+      // å®šä¹‰æŸ¥è¯¢å˜é‡
       let variables = {
         focalTweetId: status_id,
         with_rux_injections: false,
@@ -597,19 +597,19 @@ const TMD = (function () {
         withVoice: true,
         withV2Timeline: true,
       };
-      // ¶¨Òå¹¦ÄÜÌØĞÔ
+      // å®šä¹‰åŠŸèƒ½ç‰¹æ€§
       let features = {
-        // ¸÷ÖÖ¹¦ÄÜÌØĞÔµÄÆôÓÃ»ò½ûÓÃ×´Ì¬
+        // å„ç§åŠŸèƒ½ç‰¹æ€§çš„å¯ç”¨æˆ–ç¦ç”¨çŠ¶æ€
       };
-      // ¹¹½¨ÍêÕû²éÑ¯URL
+      // æ„å»ºå®Œæ•´æŸ¥è¯¢URL
       let url = encodeURI(
         `${base_url}?variables=${JSON.stringify(
           variables
         )}&features=${JSON.stringify(features)}`
       );
-      // »ñÈ¡µ±Ç°Ò³ÃæµÄcookies
+      // è·å–å½“å‰é¡µé¢çš„cookies
       let cookies = this.getCookie();
-      // ¶¨ÒåÇëÇóÍ·
+      // å®šä¹‰è¯·æ±‚å¤´
       let headers = {
         authorization:
           "Bearer AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA",
@@ -617,30 +617,30 @@ const TMD = (function () {
         "x-twitter-client-language": cookies.lang,
         "x-csrf-token": cookies.ct0,
       };
-      // Èç¹û´æÔÚguest token£¬ÔòÌí¼Óµ½ÇëÇóÍ·
+      // å¦‚æœå­˜åœ¨guest tokenï¼Œåˆ™æ·»åŠ åˆ°è¯·æ±‚å¤´
       if (cookies.ct0.length == 32) headers["x-guest-token"] = cookies.gt;
-      // ·¢ÆğÍøÂçÇëÇó²¢´¦ÀíÏìÓ¦
+      // å‘èµ·ç½‘ç»œè¯·æ±‚å¹¶å¤„ç†å“åº”
       let tweet_detail = await fetch(url, { headers: headers }).then((result) =>
         result.json()
       );
-      // ½âÎöÍÆÎÄÏêÏ¸ĞÅÏ¢
+      // è§£ææ¨æ–‡è¯¦ç»†ä¿¡æ¯
       let tweet_entrie =
         tweet_detail.data.threaded_conversation_with_injections_v2.instructions[0].entries.find(
           (n) => n.entryId == `tweet-${status_id}`
         );
       let tweet_result = tweet_entrie.content.itemContent.tweet_results.result;
-      // ·µ»ØÍÆÎÄĞÅÏ¢
+      // è¿”å›æ¨æ–‡ä¿¡æ¯
       return tweet_result.tweet || tweet_result;
     },
 
     /**
-     * »ñÈ¡Ö¸¶¨Ãû³ÆµÄcookieÖµ
-     * @param {string} [name] - ĞèÒª»ñÈ¡µÄcookieÃû³Æ£¬¿ÉÑ¡£¬Ä¬ÈÏÎª»ñÈ¡ËùÓĞcookie
-     * @returns {Object|string} Èç¹ûÖ¸¶¨ÁËname£¬Ôò·µ»Ø¸ÃcookieµÄÖµ£»·ñÔò·µ»ØËùÓĞcookieµÄ¶ÔÏó
+     * è·å–æŒ‡å®šåç§°çš„cookieå€¼
+     * @param {string} [name] - éœ€è¦è·å–çš„cookieåç§°ï¼Œå¯é€‰ï¼Œé»˜è®¤ä¸ºè·å–æ‰€æœ‰cookie
+     * @returns {Object|string} å¦‚æœæŒ‡å®šäº†nameï¼Œåˆ™è¿”å›è¯¥cookieçš„å€¼ï¼›å¦åˆ™è¿”å›æ‰€æœ‰cookieçš„å¯¹è±¡
      */
     getCookie: function (name) {
       let cookies = {};
-      // ½âÎödocument.cookie»ñÈ¡ËùÓĞcookie
+      // è§£ædocument.cookieè·å–æ‰€æœ‰cookie
       document.cookie
         .split(";")
         .filter((n) => n.indexOf("=") > 0)
@@ -649,54 +649,54 @@ const TMD = (function () {
             cookies[name.trim()] = value.trim();
           });
         });
-      // ·µ»ØÖ¸¶¨»òËùÓĞcookie
+      // è¿”å›æŒ‡å®šæˆ–æ‰€æœ‰cookie
       return name ? cookies[name] : cookies;
     },
 
     /**
-     * Òì²½´æ´¢Êı¾İµ½±¾µØ´æ´¢£¨ÈçGM_setValue£©
-     * @param {*} value - ĞèÒª´æ´¢µÄÊı¾İ£¬¿ÉÒÔÊÇÈÎÒâÀàĞÍ¡£Èç¹ûÎªÊı×é£¬Ôò»áºÏ²¢µ½ÀúÊ·Êı¾İÖĞ£»Èç¹ûÎªÆäËûÀàĞÍÇÒÀúÊ·Êı¾İÖĞ²»´æÔÚ£¬Ôò»áÌí¼Óµ½Êı¾İÊı×éÖĞ¡£
-     * @returns {Promise<void>} ²»·µ»ØÈÎºÎÄÚÈİ
+     * å¼‚æ­¥å­˜å‚¨æ•°æ®åˆ°æœ¬åœ°å­˜å‚¨ï¼ˆå¦‚GM_setValueï¼‰
+     * @param {*} value - éœ€è¦å­˜å‚¨çš„æ•°æ®ï¼Œå¯ä»¥æ˜¯ä»»æ„ç±»å‹ã€‚å¦‚æœä¸ºæ•°ç»„ï¼Œåˆ™ä¼šåˆå¹¶åˆ°å†å²æ•°æ®ä¸­ï¼›å¦‚æœä¸ºå…¶ä»–ç±»å‹ä¸”å†å²æ•°æ®ä¸­ä¸å­˜åœ¨ï¼Œåˆ™ä¼šæ·»åŠ åˆ°æ•°æ®æ•°ç»„ä¸­ã€‚
+     * @returns {Promise<void>} ä¸è¿”å›ä»»ä½•å†…å®¹
      */
     storage: async function (value) {
-      let data = await GM_getValue("download_history", []); // »ñÈ¡ÀúÊ·Êı¾İ£¬Ä¬ÈÏÎª¿ÕÊı×é
+      let data = await GM_getValue("download_history", []); // è·å–å†å²æ•°æ®ï¼Œé»˜è®¤ä¸ºç©ºæ•°ç»„
       let data_length = data.length;
-      // Èç¹ûÌá¹©ÁËvalue²ÎÊı£¬Ôò½øĞĞÊı¾İ´¦Àí
+      // å¦‚æœæä¾›äº†valueå‚æ•°ï¼Œåˆ™è¿›è¡Œæ•°æ®å¤„ç†
       if (value) {
-        // Èç¹ûvalueÊÇÊı×é£¬ÔòºÏ²¢µ½ÀúÊ·Êı¾İÖĞ
+        // å¦‚æœvalueæ˜¯æ•°ç»„ï¼Œåˆ™åˆå¹¶åˆ°å†å²æ•°æ®ä¸­
         if (Array.isArray(value)) data = data.concat(value);
-        // Èç¹ûvalue²»ÊÇÊı×éÇÒÔÚÀúÊ·Êı¾İÖĞ²»´æÔÚ£¬ÔòÌí¼Óµ½Êı¾İÊı×éÖĞ
+        // å¦‚æœvalueä¸æ˜¯æ•°ç»„ä¸”åœ¨å†å²æ•°æ®ä¸­ä¸å­˜åœ¨ï¼Œåˆ™æ·»åŠ åˆ°æ•°æ®æ•°ç»„ä¸­
         else if (data.indexOf(value) < 0) data.push(value);
-      } else return data; // Èç¹ûÎ´Ìá¹©value²ÎÊı£¬ÔòÖ±½Ó·µ»ØÀúÊ·Êı¾İ
-      // Èç¹ûÊı¾İÓĞ¸üĞÂ£¬Ôò±£´æµ½±¾µØ´æ´¢
+      } else return data; // å¦‚æœæœªæä¾›valueå‚æ•°ï¼Œåˆ™ç›´æ¥è¿”å›å†å²æ•°æ®
+      // å¦‚æœæ•°æ®æœ‰æ›´æ–°ï¼Œåˆ™ä¿å­˜åˆ°æœ¬åœ°å­˜å‚¨
       if (data.length > data_length) GM_setValue("download_history", data);
     },
     /**
-     * ¼ì²é²¢´¦Àí±¾µØ´æ´¢ÖĞµÄÀúÊ·¼ÇÂ¼ÊÇ·ñ¹ıÊ±
-     * @param {boolean} is_remove - ÊÇ·ñÒÆ³ı¹ıÊ±µÄÀúÊ·¼ÇÂ¼
-     * @returns {Array} - Èç¹û²»ÒÆ³ıÀúÊ·¼ÇÂ¼£¬Ôò·µ»ØÀúÊ·¼ÇÂ¼Êı×é£»·ñÔòÎŞ·µ»ØÖµ
+     * æ£€æŸ¥å¹¶å¤„ç†æœ¬åœ°å­˜å‚¨ä¸­çš„å†å²è®°å½•æ˜¯å¦è¿‡æ—¶
+     * @param {boolean} is_remove - æ˜¯å¦ç§»é™¤è¿‡æ—¶çš„å†å²è®°å½•
+     * @returns {Array} - å¦‚æœä¸ç§»é™¤å†å²è®°å½•ï¼Œåˆ™è¿”å›å†å²è®°å½•æ•°ç»„ï¼›å¦åˆ™æ— è¿”å›å€¼
      */
     storage_obsolete: function (is_remove) {
-      // ´Ó±¾µØ´æ´¢»ñÈ¡ÀúÊ·¼ÇÂ¼£¬Èç¹û²»´æÔÚÔò³õÊ¼»¯Îª¿ÕÊı×é
+      // ä»æœ¬åœ°å­˜å‚¨è·å–å†å²è®°å½•ï¼Œå¦‚æœä¸å­˜åœ¨åˆ™åˆå§‹åŒ–ä¸ºç©ºæ•°ç»„
       let data = JSON.parse(localStorage.getItem("history") || "[]");
-      // Èç¹ûis_removeÎªtrue£¬ÔòÒÆ³ı±¾µØ´æ´¢ÖĞµÄÀúÊ·¼ÇÂ¼
+      // å¦‚æœis_removeä¸ºtrueï¼Œåˆ™ç§»é™¤æœ¬åœ°å­˜å‚¨ä¸­çš„å†å²è®°å½•
       if (is_remove) localStorage.removeItem("history");
       else return data;
     },
 
     /**
-     * ¸ñÊ½»¯ÈÕÆÚ×Ö·û´®
-     * @param {Date} i - ÊäÈëµÄÈÕÆÚ¶ÔÏó
-     * @param {string} o - ÈÕÆÚ¸ñÊ½×Ö·û´®
-     * @param {boolean} tz - ÊÇ·ñ¿¼ÂÇÊ±Çø
-     * @returns {string} - ¸ñÊ½»¯ºóµÄÈÕÆÚ×Ö·û´®
+     * æ ¼å¼åŒ–æ—¥æœŸå­—ç¬¦ä¸²
+     * @param {Date} i - è¾“å…¥çš„æ—¥æœŸå¯¹è±¡
+     * @param {string} o - æ—¥æœŸæ ¼å¼å­—ç¬¦ä¸²
+     * @param {boolean} tz - æ˜¯å¦è€ƒè™‘æ—¶åŒº
+     * @returns {string} - æ ¼å¼åŒ–åçš„æ—¥æœŸå­—ç¬¦ä¸²
      */
     formatDate: function (i, o, tz) {
-      // ´´½¨ÈÕÆÚ¶ÔÏó
+      // åˆ›å»ºæ—¥æœŸå¯¹è±¡
       let d = new Date(i);
-      // Èç¹ûĞèÒª¿¼ÂÇÊ±Çø£¬Ôòµ÷ÕûÈÕÆÚ¶ÔÏóµ½UTCÊ±Çø
+      // å¦‚æœéœ€è¦è€ƒè™‘æ—¶åŒºï¼Œåˆ™è°ƒæ•´æ—¥æœŸå¯¹è±¡åˆ°UTCæ—¶åŒº
       if (tz) d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
-      // ÔÂ·İµÄËõĞ´Êı×é
+      // æœˆä»½çš„ç¼©å†™æ•°ç»„
       let m = [
         "JAN",
         "FEB",
@@ -711,7 +711,7 @@ const TMD = (function () {
         "NOV",
         "DEC",
       ];
-      // ÓÃÓÚÌæ»»ÈÕÆÚ¸ñÊ½×Ö·û´®ÖĞµÄ¸÷ÖÖÔªËØµÄ¶ÔÏó
+      // ç”¨äºæ›¿æ¢æ—¥æœŸæ ¼å¼å­—ç¬¦ä¸²ä¸­çš„å„ç§å…ƒç´ çš„å¯¹è±¡
       let v = {
         YYYY: d.getUTCFullYear().toString(),
         YY: d.getUTCFullYear().toString(),
@@ -724,14 +724,14 @@ const TMD = (function () {
         h2: d.getUTCHours() % 12,
         ap: d.getUTCHours() < 12 ? "AM" : "PM",
       };
-      // Ê¹ÓÃÕıÔò±í´ïÊ½ºÍÌæ»»¹æÔò¸ñÊ½»¯ÈÕÆÚ×Ö·û´®
+      // ä½¿ç”¨æ­£åˆ™è¡¨è¾¾å¼å’Œæ›¿æ¢è§„åˆ™æ ¼å¼åŒ–æ—¥æœŸå­—ç¬¦ä¸²
       return o.replace(/(YY(YY)?|MMM?|DD|hh|mm|ss|h2|ap)/g, (n) =>
         ("0" + v[n]).substr(-n.length)
       );
     },
-    // ¶¨ÒåÒ»¸öÏÂÔØÆ÷¶ÔÏó
+    // å®šä¹‰ä¸€ä¸ªä¸‹è½½å™¨å¯¹è±¡
     downloader: (function () {
-      // ³õÊ¼»¯ÏÂÔØÆ÷Ïà¹Ø±äÁ¿
+      // åˆå§‹åŒ–ä¸‹è½½å™¨ç›¸å…³å˜é‡
       let tasks = [],
         thread = 0,
         max_thread = 2,
@@ -740,27 +740,27 @@ const TMD = (function () {
         failed = 0,
         notifier,
         has_failed = false;
-      // ·µ»ØÒ»¸ö¾ßÓĞÏÂÔØ¹ÜÀí¹¦ÄÜµÄ¶ÔÏó
+      // è¿”å›ä¸€ä¸ªå…·æœ‰ä¸‹è½½ç®¡ç†åŠŸèƒ½çš„å¯¹è±¡
       return {
-        // Ìí¼ÓÒ»¸öÏÂÔØÈÎÎñµ½¶ÓÁĞ
+        // æ·»åŠ ä¸€ä¸ªä¸‹è½½ä»»åŠ¡åˆ°é˜Ÿåˆ—
         add: function (task) {
           tasks.push(task);
-          // Èç¹ûµ±Ç°Ïß³ÌÊıĞ¡ÓÚ×î´óÏß³ÌÊı£¬ÔòÆô¶¯ÏÂÒ»¸öÈÎÎñ
+          // å¦‚æœå½“å‰çº¿ç¨‹æ•°å°äºæœ€å¤§çº¿ç¨‹æ•°ï¼Œåˆ™å¯åŠ¨ä¸‹ä¸€ä¸ªä»»åŠ¡
           if (thread < max_thread) {
             thread += 1;
             this.next();
           } else this.update();
         },
-        // Òì²½Ö´ĞĞÏÂÒ»¸öÏÂÔØÈÎÎñ
+        // å¼‚æ­¥æ‰§è¡Œä¸‹ä¸€ä¸ªä¸‹è½½ä»»åŠ¡
         next: async function () {
           let task = tasks.shift();
           await this.start(task);
-          // Èç¹û»¹ÓĞÈÎÎñÇÒµ±Ç°Ïß³ÌÊıÎ´´ïµ½×î´óÖµ£¬¼ÌĞøÖ´ĞĞÏÂÒ»¸öÈÎÎñ
+          // å¦‚æœè¿˜æœ‰ä»»åŠ¡ä¸”å½“å‰çº¿ç¨‹æ•°æœªè¾¾åˆ°æœ€å¤§å€¼ï¼Œç»§ç»­æ‰§è¡Œä¸‹ä¸€ä¸ªä»»åŠ¡
           if (tasks.length > 0 && thread <= max_thread) this.next();
           else thread -= 1;
           this.update();
         },
-        // ¿ªÊ¼ÏÂÔØÖ¸¶¨ÈÎÎñ
+        // å¼€å§‹ä¸‹è½½æŒ‡å®šä»»åŠ¡
         start: function (task) {
           this.update();
           return new Promise((resolve) => {
@@ -782,10 +782,10 @@ const TMD = (function () {
             });
           });
         },
-        // ´¦ÀíÏÂÔØÊ§°ÜµÄÇé¿ö£¬³¢ÊÔÖØÊÔ»ò±¨¸æ´íÎó
+        // å¤„ç†ä¸‹è½½å¤±è´¥çš„æƒ…å†µï¼Œå°è¯•é‡è¯•æˆ–æŠ¥å‘Šé”™è¯¯
         retry: function (task, result) {
           retry += 1;
-          // Èç¹û´ïµ½×î´óÖØÊÔ´ÎÊı£¬½«×î´óÏß³ÌÊı½µÖÁ1
+          // å¦‚æœè¾¾åˆ°æœ€å¤§é‡è¯•æ¬¡æ•°ï¼Œå°†æœ€å¤§çº¿ç¨‹æ•°é™è‡³1
           if (retry == 3) max_thread = 1;
           if (
             (task.retry && task.retry >= max_retry) ||
@@ -794,14 +794,14 @@ const TMD = (function () {
             task.onerror(result);
             failed += 1;
           } else {
-            // Èç¹û×î´óÏß³ÌÊıÎª1£¬ÔòÔö¼ÓÖØÊÔ´ÎÊı
+            // å¦‚æœæœ€å¤§çº¿ç¨‹æ•°ä¸º1ï¼Œåˆ™å¢åŠ é‡è¯•æ¬¡æ•°
             if (max_thread == 1) task.retry = (task.retry || 0) + 1;
             this.add(task);
           }
         },
-        // ¸üĞÂÏÂÔØÆ÷µÄ×´Ì¬ĞÅÏ¢
+        // æ›´æ–°ä¸‹è½½å™¨çš„çŠ¶æ€ä¿¡æ¯
         update: function () {
-          // ³õÊ¼»¯»ò¸üĞÂÏÂÔØ×´Ì¬Í¨ÖªÆ÷
+          // åˆå§‹åŒ–æˆ–æ›´æ–°ä¸‹è½½çŠ¶æ€é€šçŸ¥å™¨
           if (!notifier) {
             notifier = document.createElement("div");
             notifier.title = "Twitter Media Downloader";
@@ -809,7 +809,7 @@ const TMD = (function () {
             notifier.innerHTML = "<label>0</label>|<label>0</label>";
             document.body.appendChild(notifier);
           }
-          // ¸üĞÂÊ§°ÜÈÎÎñµÄÌáÊ¾£¬²¢Ìá¹©Çå³ıÑ¡Ïî
+          // æ›´æ–°å¤±è´¥ä»»åŠ¡çš„æç¤ºï¼Œå¹¶æä¾›æ¸…é™¤é€‰é¡¹
           if (failed > 0 && !has_failed) {
             has_failed = true;
             notifier.innerHTML += "|";
@@ -822,7 +822,7 @@ const TMD = (function () {
               this.update();
             };
           }
-          // ¸üĞÂÍ¨ÖªÆ÷ÖĞµÄÏÂÔØ½ø¶ÈºÍ×´Ì¬
+          // æ›´æ–°é€šçŸ¥å™¨ä¸­çš„ä¸‹è½½è¿›åº¦å’ŒçŠ¶æ€
           notifier.firstChild.innerText = thread;
           notifier.firstChild.nextElementSibling.innerText = tasks.length;
           if (failed > 0) notifier.lastChild.innerText = failed;
@@ -832,7 +832,7 @@ const TMD = (function () {
         },
       };
     })(),
-    // ¶¨ÒåÖ§³ÖµÄÓïÑÔ¼°ÆäÏà¹ØÎÄ±¾
+    // å®šä¹‰æ”¯æŒçš„è¯­è¨€åŠå…¶ç›¸å…³æ–‡æœ¬
     language: {
       en: {
         download: "Download",
@@ -849,45 +849,45 @@ const TMD = (function () {
         },
       },
       ja: {
-        download: "¥À¥¦¥ó¥í©`¥É",
-        completed: "¥À¥¦¥ó¥í©`¥ÉÍêÁË",
-        settings: "ÔO¶¨",
+        download: "ãƒ€ã‚¦ãƒ³ãƒ­ãƒ¼ãƒ‰",
+        completed: "ãƒ€ã‚¦ãƒ³ãƒ­ãƒ¼ãƒ‰å®Œäº†",
+        settings: "è¨­å®š",
         dialog: {
-          title: "¥À¥¦¥ó¥í©`¥ÉÔO¶¨",
-          save: "±£´æ",
-          save_history: "¥À¥¦¥ó¥í©`¥ÉÂÄšs¤ò±£´æ¤¹¤ë",
-          clear_history: "(¥¯¥ê¥¢)",
-          clear_confirm: "¥À¥¦¥ó¥í©`¥ÉÂÄšs¤òÏ÷³ı¤¹¤ë£¿",
-          show_sensitive: "¥»¥ó¥·¥Æ¥£¥Ö¤ÊÄÚÈİ¤ò³£¤Ë±íÊ¾¤¹¤ë",
-          pattern: "¥Õ¥¡¥¤¥ëÃû¥Ñ¥¿©`¥ó",
+          title: "ãƒ€ã‚¦ãƒ³ãƒ­ãƒ¼ãƒ‰è¨­å®š",
+          save: "ä¿å­˜",
+          save_history: "ãƒ€ã‚¦ãƒ³ãƒ­ãƒ¼ãƒ‰å±¥æ­´ã‚’ä¿å­˜ã™ã‚‹",
+          clear_history: "(ã‚¯ãƒªã‚¢)",
+          clear_confirm: "ãƒ€ã‚¦ãƒ³ãƒ­ãƒ¼ãƒ‰å±¥æ­´ã‚’å‰Šé™¤ã™ã‚‹ï¼Ÿ",
+          show_sensitive: "ã‚»ãƒ³ã‚·ãƒ†ã‚£ãƒ–ãªå†…å®¹ã‚’å¸¸ã«è¡¨ç¤ºã™ã‚‹",
+          pattern: "ãƒ•ã‚¡ã‚¤ãƒ«åãƒ‘ã‚¿ãƒ¼ãƒ³",
         },
       },
       zh: {
-        download: "ÏÂÔØ",
-        completed: "ÏÂÔØÍê³É",
-        settings: "ÉèÖÃ",
+        download: "ä¸‹è½½",
+        completed: "ä¸‹è½½å®Œæˆ",
+        settings: "è®¾ç½®",
         dialog: {
-          title: "ÏÂÔØÉèÖÃ",
-          save: "±£´æ",
-          save_history: "±£´æÏÂÔØ¼ÇÂ¼",
-          clear_history: "(Çå³ı)",
-          clear_confirm: "È·ÈÏÒªÇå³ıÏÂÔØ¼ÇÂ¼£¿",
-          show_sensitive: "×Ô¶¯ÏÔÊ¾Ãô¸ĞµÄÄÚÈİ",
-          pattern: "ÎÄ¼şÃû¸ñÊ½",
+          title: "ä¸‹è½½è®¾ç½®",
+          save: "ä¿å­˜",
+          save_history: "ä¿å­˜ä¸‹è½½è®°å½•",
+          clear_history: "(æ¸…é™¤)",
+          clear_confirm: "ç¡®è®¤è¦æ¸…é™¤ä¸‹è½½è®°å½•ï¼Ÿ",
+          show_sensitive: "è‡ªåŠ¨æ˜¾ç¤ºæ•æ„Ÿçš„å†…å®¹",
+          pattern: "æ–‡ä»¶åæ ¼å¼",
         },
       },
       "zh-Hant": {
-        download: "ÏÂİd",
-        completed: "ÏÂİdÍê³É",
-        settings: "ÔOÖÃ",
+        download: "ä¸‹è¼‰",
+        completed: "ä¸‹è¼‰å®Œæˆ",
+        settings: "è¨­ç½®",
         dialog: {
-          title: "ÏÂİdÔOÖÃ",
-          save: "±£´æ",
-          save_history: "±£´æÏÂİdÓ›ä›",
-          clear_history: "(Çå³ı)",
-          clear_confirm: "´_ÕJÒªÇå³ıÏÂİdÓ›ä›£¿",
-          show_sensitive: "×Ô„Óï@Ê¾Ãô¸ĞµÄÄÚÈİ",
-          pattern: "ÎÄ¼şÃûÒ„t",
+          title: "ä¸‹è¼‰è¨­ç½®",
+          save: "ä¿å­˜",
+          save_history: "ä¿å­˜ä¸‹è¼‰è¨˜éŒ„",
+          clear_history: "(æ¸…é™¤)",
+          clear_confirm: "ç¢ºèªè¦æ¸…é™¤ä¸‹è¼‰è¨˜éŒ„ï¼Ÿ",
+          show_sensitive: "è‡ªå‹•é¡¯ç¤ºæ•æ„Ÿçš„å†…å®¹",
+          pattern: "æ–‡ä»¶åè¦å‰‡",
         },
       },
     },
