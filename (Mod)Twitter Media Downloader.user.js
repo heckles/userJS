@@ -7,7 +7,7 @@
 // @description:ja ワンクリックで動画?画像を保存する。
 // @description:zh-cn 一键保存视频/图片
 // @description:zh-tw 一鍵保存視頻/圖片
-// @version     1.27(Mod：1.修改下载文件名格式)
+// @version     1.27-Mod-20240408(1.修改下载文件名格式)
 // @author      AMANE
 // @namespace   none
 // @match       https://twitter.com/*
