@@ -7,8 +7,8 @@
 // @description:ja ワンクリックで動画・画像を保存する。
 // @description:zh-cn 一键保存视频/图片
 // @description:zh-tw 一鍵保存視頻/圖片
-// @version     1.27
-// @author      AMANE【Mod by heckles】
+// @version     1.27【Mod】20240408.03
+// @author      AMANE【Mod】by heckles
 // @namespace   none
 // @match       https://twitter.com/*
 // @match       https://mobile.twitter.com/*
