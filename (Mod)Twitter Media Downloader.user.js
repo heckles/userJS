@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name        Twitter Media Downloader
+// @name        (Mod)Twitter Media Downloader
 // @name:ja     Twitter Media Downloader
 // @name:zh-cn  Twitter 媒体下载
 // @name:zh-tw  Twitter 媒體下載
@@ -7,7 +7,7 @@
 // @description:ja ワンクリックで動画?画像を保存する。
 // @description:zh-cn 一键保存视频/图片
 // @description:zh-tw 一鍵保存視頻/圖片
-// @version     1.27
+// @version     1.27(Mod：1.修改下载文件名格式)
 // @author      AMANE
 // @namespace   none
 // @match       https://twitter.com/*
@@ -38,8 +38,8 @@
  * @returns {string} 根据提供的参数生成的推特文件名
  */
 const filename =
-  "twitter_{user-name}(@{user-id})_{date-time}_{status-id}_{file-type}";
-
+  //  "twitter_{user-name}(@{user-id})_{date-time}_{status-id}_{file-type}";
+  "{date-time}_twitter_{user-name}(@{user-id})_{status-id}_{file-type}";
 /**
  * TMD 是一个封装了各种功能的自执行函数，用于实现语言环境配置、存储管理、敏感内容显示控制等。
  * */
@@ -309,7 +309,8 @@ const TMD = (function () {
         ? out
           .match(/{date-time(?:-local)?:([^{}]+)}/)[1]
           .replace(/[\\/|<>*?:"]/g, (v) => invalid_chars[v])
-        : "YYYYMMDD-hhmmss";
+        //        : "YYYYMMDD-hhmmss";
+        : "YYYY-MM-DD hh-mm-ss";
 
       // 准备下载信息
       let info = {};
