@@ -4,7 +4,7 @@
 // @description:ja ワンクリックで動画・画像を保存する。
 // @description:zh-cn 一键保存视频/图片
 // @description:zh-tw 一鍵保存視頻/圖片
-// @version     1.27【Mod】20240411.03.02
+// @version     1.27【Mod】20240411.15.59
 // @author      AMANE【Mod】heckles
 // @namespace   none
 // @match       https://twitter.com/*
@@ -243,14 +243,28 @@ const TMD = (function () {
         btn_down.onclick = () => this.click(btn_down, status_id, is_exist);
       });
     },
+    /**
+ * 点击按钮时的处理函数，用于下载推文的相关信息和媒体文件。
+ * @param {HTMLElement} btn 被点击的按钮元素。
+ * @param {string} status_id 推文的ID。
+ * @param {boolean} is_exist 表示该推文是否已存在于历史记录中。
+ * @param {number} [index] 媒体文件的索引，用于下载特定的媒体文件（可选）。
+ */
     click: async function (btn, status_id, is_exist, index) {
+      // 如果按钮正在加载中，则不执行任何操作
       if (btn.classList.contains("loading")) return;
+      // 设置按钮状态为加载中
       this.status(btn, "loading");
+      // 从存储中获取文件名，并移除换行符
       let out = (await GM_getValue("filename", filename)).split("\n").join("");
+      // 获取是否保存历史记录的设置
       let save_history = await GM_getValue("save_history", true);
+      // 获取推文的JSON数据
       let json = await this.fetchJson(status_id);
+      // 解析推文和用户信息
       let tweet = json.legacy;
       let user = json.core.user_results.result.legacy;
+      // 定义无效字符及其替换字符
       let invalid_chars = {
         "\\": "＼",
         "/": "／",
@@ -268,12 +282,15 @@ const TMD = (function () {
         "\ufeff": "",
         "🔞": "",
       };
+      // 解析或设定日期时间格式
       let datetime = out.match(/{date-time(-local)?:[^{}]+}/)
         ? out
           .match(/{date-time(?:-local)?:([^{}]+)}/)[1]
           .replace(/[\\/|<>*?:"]/g, (v) => invalid_chars[v])
         : "YYYY-MM-DD hh-mm-ss";
+      // 准备存储信息的对象
       let info = {};
+      // 填充信息对象，包括推文ID、用户名、用户ID、日期时间等
       info["status-id"] = status_id;
       info["user-name"] = user.name.replace(
         /([\\/|*?:"]|[\u200b-\u200d\u2060\ufeff]|🔞)/g,
@@ -286,6 +303,7 @@ const TMD = (function () {
         datetime,
         true
       );
+      // 处理推文的完整文本，移除URL，替换无效字符
       info["full-text"] = tweet.full_text
         .split("\n")
         .join(" ")
@@ -294,12 +312,15 @@ const TMD = (function () {
           /[\\/|<>*?:"]|[\u200b-\u200d\u2060\ufeff]/g,
           (v) => invalid_chars[v]
         );
+      // 处理推文中的媒体文件
       let medias = tweet.extended_entities && tweet.extended_entities.media;
       if (index) medias = [medias[index - 1]];
       if (medias.length > 0) {
+        // 对每个媒体文件执行下载操作
         let tasks = medias.length;
         let tasks_result = [];
         medias.forEach((media, i) => {
+          // 提取媒体文件的下载URL和相关信息
           info.url =
             media.type == "photo"
               ? media.media_url_https + ":orig"
@@ -310,6 +331,7 @@ const TMD = (function () {
           info["file-name"] = info.file.split(".").shift();
           info["file-ext"] = info.file.split(".").pop();
           info["file-type"] = media.type.replace("animated_", "");
+          // 构造输出文件名
           info.out = (
             out.replace(/\.?{file-ext}/, "") +
             ((medias.length > 1 || index) && !out.match("{file-name}")
@@ -317,6 +339,7 @@ const TMD = (function () {
               : "") +
             ".{file-ext}"
           ).replace(/{([^{}:]+)(:[^{}]+)?}/g, (match, name) => info[name]);
+          // 添加下载任务
           this.downloader.add({
             url: info.url,
             name: info.out,
@@ -327,8 +350,10 @@ const TMD = (function () {
                   ? (index ? index : i + 1) + ": "
                   : "") + lang.completed
               );
+              // 更新按钮状态
               this.status(btn, null, tasks_result.sort().join("\n"));
               if (tasks === 0) {
+                // 所有任务完成后，更新按钮状态为完成，并保存历史记录
                 this.status(btn, "completed", lang.completed);
                 if (save_history && !is_exist) {
                   history.push(status_id);
@@ -341,23 +366,40 @@ const TMD = (function () {
               tasks_result.push(
                 (medias.length > 1 ? i + 1 + ": " : "") + result.details.current
               );
+              // 下载失败时更新按钮状态
               this.status(btn, "failed", tasks_result.sort().join("\n"));
             },
           });
         });
       } else {
+        // 如果没有找到媒体文件，更新按钮状态为失败
         this.status(btn, "failed", "MEDIA_NOT_FOUND");
       }
     },
+    /**
+ * 更新按钮状态。
+ * @param {HTMLElement} btn - 要更新状态的按钮元素。
+ * @param {string} css - 要添加的CSS类（可选）。
+ * @param {string} title - 按钮的标题（可选）。
+ * @param {string} style - 要直接应用到按钮的内联样式（可选）。
+ */
     status: function (btn, css, title, style) {
+      // 如果提供了CSS类，则移除旧的类并添加新的类
       if (css) {
         btn.classList.remove("download", "completed", "loading", "failed");
         btn.classList.add(css);
       }
+      // 如果提供了标题，则更新按钮的标题
       if (title) btn.title = title;
+      // 如果提供了样式，则更新按钮的内联样式
       if (style) btn.style.cssText = style;
     },
+
+    /**
+     * 弹出设置对话框。
+     */
     settings: async function () {
+      // 创建元素的工具函数
       const $element = (parent, tag, style, content, css) => {
         let el = document.createElement(tag);
         if (style) el.style.cssText = style;
@@ -371,11 +413,15 @@ const TMD = (function () {
         parent.appendChild(el);
         return el;
       };
+
+      // 创建设置对话框的容器和基本样式
       let wapper = $element(
         document.body,
         "div",
-        "position: fixed; left: 0px; top: 0px; width: 100%; height: 100%; background-color: #0009; z-index: 10;"
+        "position: fixed; left: 0px; top: 0px; width: 100%; height: 100%; background-color: #0009; z-index: 10;",
       );
+
+      // 处理设置对话框的关闭逻辑
       let wapper_close;
       wapper.onmousedown = (e) => {
         wapper_close = e.target == wapper;
@@ -383,22 +429,29 @@ const TMD = (function () {
       wapper.onmouseup = (e) => {
         if (wapper_close && e.target == wapper) wapper.remove();
       };
+
+      // 创建并设置对话框内容
       let dialog = $element(
         wapper,
         "div",
-        "position: absolute; left: 50%; top: 50%; transform: translateX(-50%) translateY(-50%); width: fit-content; width: -moz-fit-content; background-color: #f3f3f3; border: 1px solid #ccc; border-radius: 10px; color: black;"
+        "position: absolute; left: 50%; top: 50%; transform: translateX(-50%) translateY(-50%); width: fit-content; width: -moz-fit-content; background-color: #f3f3f3; border: 1px solid #ccc; border-radius: 10px; color: black;",
       );
+      // 设置对话框标题
       let title = $element(
         dialog,
         "h3",
         "margin: 10px 20px;",
         lang.dialog.title
       );
+
+      // 创建设置选项
       let options = $element(
         dialog,
         "div",
-        "margin: 10px; border: 1px solid #ccc; border-radius: 5px;"
+        "margin: 10px; border: 1px solid #ccc; border-radius: 5px;",
       );
+
+      // 保存历史记录的设置
       let save_history_label = $element(
         options,
         "label",
@@ -415,6 +468,8 @@ const TMD = (function () {
       save_history_input.onchange = () => {
         GM_setValue("save_history", save_history_input.checked);
       };
+
+      // 清除历史记录的按钮
       let clear_history = $element(
         save_history_label,
         "label",
@@ -427,6 +482,8 @@ const TMD = (function () {
           GM_setValue("download_history", []);
         }
       };
+
+      // 显示敏感内容的设置
       let show_sensitive_label = $element(
         options,
         "label",
@@ -444,10 +501,12 @@ const TMD = (function () {
         show_sensitive = show_sensitive_input.checked;
         GM_setValue("show_sensitive", show_sensitive);
       };
+
+      // 文件名设置
       let filename_div = $element(
         dialog,
         "div",
-        "margin: 10px; border: 1px solid #ccc; border-radius: 5px;"
+        "margin: 10px; border: 1px solid #ccc; border-radius: 5px;",
       );
       let filename_label = $element(
         filename_div,
@@ -461,6 +520,8 @@ const TMD = (function () {
         "display: block; min-width: 500px; max-width: 500px; min-height: 100px; font-size: inherit; background: white; color: black;",
         await GM_getValue("filename", filename)
       );
+
+      // 文件名标签和占位符
       let filename_tags = $element(
         filename_div,
         "label",
@@ -476,6 +537,8 @@ const TMD = (function () {
 `
       );
       filename_input.selectionStart = filename_input.value.length;
+
+      // 为文件名占位符添加点击事件，以插入到当前选区
       filename_tags.querySelectorAll(".tmd-tag").forEach((tag) => {
         tag.onclick = () => {
           let ss = filename_input.selectionStart;
@@ -489,6 +552,8 @@ const TMD = (function () {
           filename_input.focus();
         };
       });
+
+      // 保存设置的按钮
       let btn_save = $element(
         title,
         "label",
@@ -501,8 +566,15 @@ const TMD = (function () {
         wapper.remove();
       };
     },
+    /**
+     * 异步获取指定状态ID的JSON数据。
+     * @param {string} status_id - 需要获取数据的状态ID。
+     * @returns {Promise<Object>} 返回一个Promise对象，解析后的结果是 tweet 的详细信息。
+     */
     fetchJson: async function (status_id) {
+      // 定义基础URL
       let base_url = `https://${host}/i/api/graphql/NmCeCgkVlsRGS1cAwqtgmw/TweetDetail`;
+      // 定义请求变量
       let variables = {
         focalTweetId: status_id,
         with_rux_injections: false,
@@ -513,6 +585,7 @@ const TMD = (function () {
         withVoice: true,
         withV2Timeline: true,
       };
+      // 定义请求特性
       let features = {
         rweb_lists_timeline_redesign_enabled: true,
         responsive_web_graphql_exclude_directive_enabled: true,
@@ -535,12 +608,15 @@ const TMD = (function () {
         responsive_web_media_download_video_enabled: false,
         responsive_web_enhance_cards_enabled: false,
       };
+      // 构建完整请求URL
       let url = encodeURI(
         `${base_url}?variables=${JSON.stringify(
           variables
         )}&features=${JSON.stringify(features)}`
       );
+      // 获取cookie
       let cookies = this.getCookie();
+      // 定义请求头
       let headers = {
         authorization:
           "Bearer AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA",
@@ -548,45 +624,77 @@ const TMD = (function () {
         "x-twitter-client-language": cookies.lang,
         "x-csrf-token": cookies.ct0,
       };
+      // 如果存在guest token，则添加到请求头
       if (cookies.ct0.length == 32) headers["x-guest-token"] = cookies.gt;
+      // 发起fetch请求并解析JSON
       let tweet_detail = await fetch(url, { headers: headers }).then((result) =>
         result.json()
       );
+      // 解析tweet详细信息
       let tweet_entrie =
         tweet_detail.data.threaded_conversation_with_injections_v2.instructions[0].entries.find(
           (n) => n.entryId == `tweet-${status_id}`
         );
       let tweet_result = tweet_entrie.content.itemContent.tweet_results.result;
+      // 返回tweet信息
       return tweet_result.tweet || tweet_result;
     },
+    /**
+    * 获取指定名称的cookie值。
+    * 如果指定了name，则返回该name对应的cookie值；
+    * 如果没有指定name，则返回所有cookie的键值对对象。
+    * @param {string} name 需要获取的cookie的名称。
+    * @returns {string|object} 如果指定了name，则返回对应的cookie值；否则返回所有cookie的键值对对象。
+    */
     getCookie: function (name) {
       let cookies = {};
+      // 解析document.cookie，获取所有的cookie键值对
       document.cookie
         .split(";")
-        .filter((n) => n.indexOf("=") > 0)
+        .filter((n) => n.indexOf("=") > 0) // 过滤掉没有 "=" 的无效cookie
         .forEach((n) => {
-          n.replace(/^([^=]+)=(.+)$/, (match, name, value) => {
+          n.replace(/^([^=]+)=(.+)$/, (match, name, value) => { // 解析出cookie的键和值
             cookies[name.trim()] = value.trim();
           });
         });
+      // 如果指定了name，返回对应的值；否则返回所有cookie
       return name ? cookies[name] : cookies;
     },
+
+    /**
+     * 用于存储数据到本地存储（如localStorage或IndexedDB等）。
+     * 如果传入了value，则将其添加到历史记录中（如果value已存在则不重复添加）；
+     * 如果未传入value，则返回当前的历史记录数据。
+     * @param {*} value 需要存储的数据项或数据数组。
+     * @returns {Promise} 如果存储数据，返回一个Promise对象，解析为存储操作的成功或失败；
+     *                    如果获取数据，直接返回历史记录数据。
+     */
     storage: async function (value) {
-      let data = await GM_getValue("download_history", []);
+      let data = await GM_getValue("download_history", []); // 异步获取下载历史记录，默认为空数组
       let data_length = data.length;
+      // 如果传入了value，进行数据处理
       if (value) {
+        // 如果value是数组，则直接合并数组
         if (Array.isArray(value)) data = data.concat(value);
+        // 如果value不是数组且不在历史记录中，则添加到历史记录
         else if (data.indexOf(value) < 0) data.push(value);
-      } else return data;
+      } else return data; // 如果未传入value，直接返回历史记录数据
+      // 如果数据长度增加，更新历史记录
       if (data.length > data_length) GM_setValue("download_history", data);
     },
+    // 检查本地存储中的历史记录是否已过时，并根据is_remove参数决定是否删除
     storage_obsolete: function (is_remove) {
+      // 尝试从localStorage获取"history"，如果不存在则默认为空数组
       let data = JSON.parse(localStorage.getItem("history") || "[]");
+      // 如果is_remove为true，则从localStorage中移除"history"
       if (is_remove) localStorage.removeItem("history");
-      else return data;
+      else return data; // 如果is_remove为false，返回历史记录数据
     },
+
+    // 格式化日期字符串
     formatDate: function (i, o, tz) {
-      let d = new Date(i);
+      let d = new Date(i); // 根据输入时间初始化Date对象
+      // 如果指定了时区(tz)，则调整日期到UTC时区
       if (tz) d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
       let m = [
         "JAN",
@@ -601,8 +709,8 @@ const TMD = (function () {
         "OCT",
         "NOV",
         "DEC",
-      ];
-      let v = {
+      ]; // 月份缩写数组
+      let v = { // 用于替换日期格式字符串中的占位符
         YYYY: d.getUTCFullYear().toString(),
         YY: d.getUTCFullYear().toString(),
         MM: d.getUTCMonth() + 1,
@@ -614,153 +722,173 @@ const TMD = (function () {
         h2: d.getUTCHours() % 12,
         ap: d.getUTCHours() < 12 ? "AM" : "PM",
       };
+      // 使用正则表达式和占位符替换策略格式化日期字符串
       return o.replace(/(YY(YY)?|MMM?|DD|hh|mm|ss|h2|ap)/g, (n) =>
         ("0" + v[n]).substr(-n.length)
       );
     },
+
+    // 文件下载管理器，支持并发下载和自动重试
     downloader: (function () {
-      let tasks = [],
-        thread = 0,
-        max_thread = 2,
-        retry = 0,
-        max_retry = 2,
-        failed = 0,
-        notifier,
-        has_failed = false;
+      let tasks = [], // 保存待下载任务的数组
+        thread = 0, // 当前正在下载的任务数
+        max_thread = 2, // 最大并发下载数
+        retry = 0, // 当前重试次数
+        max_retry = 2, // 最大重试次数
+        failed = 0, // 失败的任务数
+        notifier, // 用于通知下载状态的DOM元素
+        has_failed = false; // 是否已有任务失败
+      // 返回一个包含添加任务、启动任务等方法的对象
       return {
         add: function (task) {
-          tasks.push(task);
+          tasks.push(task); // 添加任务到队列
           if (thread < max_thread) {
-            thread += 1;
+            thread += 1; // 如果当前下载任务数小于最大并发数，开始下载
             this.next();
-          } else this.update();
+          } else this.update(); // 否则更新下载状态
         },
         next: async function () {
-          let task = tasks.shift();
-          await this.start(task);
+          let task = tasks.shift(); // 取出队列中的第一个任务
+          await this.start(task); // 开始下载任务
+          // 如果还有任务且当前并发数小于最大并发数，继续下载下一个任务
           if (tasks.length > 0 && thread <= max_thread) this.next();
-          else thread -= 1;
-          this.update();
+          else thread -= 1; // 否则减少当前下载任务数
+          this.update(); // 更新下载状态
         },
         start: function (task) {
-          this.update();
+          this.update(); // 更新下载状态
+          // 使用GM_download函数下载文件，并处理成功或失败的情况
           return new Promise((resolve) => {
             GM_download({
               url: task.url,
               name: task.name,
               onload: (result) => {
-                task.onload();
+                task.onload(); // 下载成功时调用onload回调
                 resolve();
               },
               onerror: (result) => {
-                this.retry(task, result);
+                this.retry(task, result); // 下载失败时尝试重试
                 resolve();
               },
               ontimeout: (result) => {
-                this.retry(task, result);
+                this.retry(task, result); // 下载超时时尝试重试
                 resolve();
               },
             });
           });
         },
         retry: function (task, result) {
-          retry += 1;
-          if (retry == 3) max_thread = 1;
+          retry += 1; // 增加重试次数
+          if (retry == 3) max_thread = 1; // 如果重试次数达到3次，将最大并发数降至1
           if (
             (task.retry && task.retry >= max_retry) ||
             (result.details && result.details.current == "USER_CANCELED")
           ) {
-            task.onerror(result);
-            failed += 1;
+            task.onerror(result); // 如果达到最大重试次数或用户取消，调用onerror回调
+            failed += 1; // 增加失败任务数
           } else {
+            // 如果尚未达到最大重试次数，将任务重新加入队列进行重试
             if (max_thread == 1) task.retry = (task.retry || 0) + 1;
             this.add(task);
           }
         },
         update: function () {
+          // 更新下载状态通知
           if (!notifier) {
-            notifier = document.createElement("div");
+            notifier = document.createElement("div"); // 创建通知元素
             notifier.title = "Twitter Media Downloader";
             notifier.classList.add("tmd-notifier");
             notifier.innerHTML = "<label>0</label>|<label>0</label>";
             document.body.appendChild(notifier);
           }
+          // 如果有失败的任务，增加清除失败任务的选项
           if (failed > 0 && !has_failed) {
             has_failed = true;
             notifier.innerHTML += "|";
             let clear = document.createElement("label");
             notifier.appendChild(clear);
             clear.onclick = () => {
-              notifier.innerHTML = "<label>0</label>|<label>0</label>";
+              notifier.innerHTML = "<label>0</label>|<label>0</label>"; // 清除下载状态
               failed = 0;
               has_failed = false;
-              this.update();
+              this.update(); // 更新下载状态通知
             };
           }
+          // 更新下载状态显示
           notifier.firstChild.innerText = thread;
           notifier.firstChild.nextElementSibling.innerText = tasks.length;
           if (failed > 0) notifier.lastChild.innerText = failed;
+          // 根据下载状态添加或移除运行中样式
           if (thread > 0 || tasks.length > 0 || failed > 0)
             notifier.classList.add("running");
           else notifier.classList.remove("running");
         },
       };
     })(),
+    // 定义多语言支持的语言字典
     language: {
       en: {
-        download: "Download",
-        completed: "Download Completed",
-        settings: "Settings",
+        // 英文语言配置
+        download: "Download", // 下载
+        completed: "Download Completed", // 下载完成
+        settings: "Settings", // 设置
         dialog: {
-          title: "Download Settings",
-          save: "Save",
-          save_history: "Remember download history",
-          clear_history: "(Clear)",
-          clear_confirm: "Clear download history?",
-          show_sensitive: "Always show sensitive content",
-          pattern: "File Name Pattern",
+          // 下载设置对话框中的文字
+          title: "Download Settings", // 标题
+          save: "Save", // 保存
+          save_history: "Remember download history", // 记录下载历史
+          clear_history: "(Clear)", // 清除历史记录
+          clear_confirm: "Clear download history?", // 确认清除下载历史
+          show_sensitive: "Always show sensitive content", // 总是显示敏感内容
+          pattern: "File Name Pattern", // 文件名模式
         },
       },
       ja: {
-        download: "ダウンロード",
-        completed: "ダウンロード完了",
-        settings: "設定",
+        // 日文语言配置
+        download: "ダウンロード", // ダウンロード
+        completed: "ダウンロード完了", // ダウンロード完了
+        settings: "設定", // 設定
         dialog: {
-          title: "ダウンロード設定",
-          save: "保存",
-          save_history: "ダウンロード履歴を保存する",
-          clear_history: "(クリア)",
-          clear_confirm: "ダウンロード履歴を削除する？",
-          show_sensitive: "センシティブな内容を常に表示する",
-          pattern: "ファイル名パターン",
+          // ダウンロード設定对话框中的文字
+          title: "ダウンロード設定", // タイトル
+          save: "保存", // 保存
+          save_history: "ダウンロード履歴を保存する", // ダウンロード履歴を保存する
+          clear_history: "(クリア)", // 履歴をクリア
+          clear_confirm: "ダウンロード履歴を削除する？", // 履歴を削除する？
+          show_sensitive: "センシティブな内容を常に表示する", // センシティブな内容を常に表示する
+          pattern: "ファイル名パターン", // ファイル名パターン
         },
       },
       zh: {
-        download: "下载",
-        completed: "下载完成",
-        settings: "设置",
+        // 简体中文语言配置
+        download: "下载", // 下载
+        completed: "下载完成", // 下载完成
+        settings: "设置", // 设置
         dialog: {
-          title: "下载设置",
-          save: "保存",
-          save_history: "保存下载记录",
-          clear_history: "(清除)",
-          clear_confirm: "确认要清除下载记录？",
-          show_sensitive: "自动显示敏感的内容",
-          pattern: "文件名格式",
+          // 下载设置对话框中的文字
+          title: "下载设置", // 标题
+          save: "保存", // 保存
+          save_history: "保存下载记录", // 保存下载记录
+          clear_history: "(清除)", // 清除记录
+          clear_confirm: "确认要清除下载记录？", // 确认要清除下载记录？
+          show_sensitive: "自动显示敏感的内容", // 自动显示敏感的内容
+          pattern: "文件名格式", // 文件名格式
         },
       },
       "zh-Hant": {
-        download: "下載",
-        completed: "下載完成",
-        settings: "設置",
+        // 繁体中文语言配置
+        download: "下載", // 下載
+        completed: "下載完成", // 下載完成
+        settings: "設置", // 設置
         dialog: {
-          title: "下載設置",
-          save: "保存",
-          save_history: "保存下載記錄",
-          clear_history: "(清除)",
-          clear_confirm: "確認要清除下載記錄？",
-          show_sensitive: "自動顯示敏感的内容",
-          pattern: "文件名規則",
+          // 下載設置对话框中的文字
+          title: "下載設置", // 標題
+          save: "保存", // 保存
+          save_history: "保存下載記錄", // 保存下載記錄
+          clear_history: "(清除)", // 清除記錄
+          clear_confirm: "確認要清除下載記錄？", // 確認要清除下載記錄？
+          show_sensitive: "自動顯示敏感的内容", // 自動顯示敏感的内容
+          pattern: "文件名規則", // 文件名規則
         },
       },
     },
