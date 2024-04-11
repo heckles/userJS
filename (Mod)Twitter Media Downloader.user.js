@@ -19,8 +19,8 @@
 // @compatible  Chrome
 // @compatible  Firefox
 // @license     MIT
-// @downloadURL https://update.greasyfork.org/scripts/423001/Twitter%20Media%20Downloader.user.js
-// @updateURL https://update.greasyfork.org/scripts/423001/Twitter%20Media%20Downloader.user.js
+// @downloadURL https://update.greasyfork.org/scripts/491942/%E3%80%90Mod%E3%80%91Twitter%20Media%20Downloader.user.js
+// @updateURL https://update.greasyfork.org/scripts/491942/%E3%80%90Mod%E3%80%91Twitter%20Media%20Downloader.user.js
 // ==/UserScript==
 /* jshint esversion: 8 */
 
