@@ -4,7 +4,7 @@
 // @description:ja ワンクリックで動画・画像を保存する。
 // @description:zh-cn 一键保存视频/图片
 // @description:zh-tw 一鍵保存視頻/圖片
-// @version     1.27【Mod】20240411.03.01
+// @version     1.27【Mod】20240411.03.02
 // @author      AMANE【Mod】heckles
 // @namespace   none
 // @match       https://twitter.com/*
@@ -64,38 +64,60 @@ const TMD = (function () {
       );
       observer.observe(document.body, { childList: true, subtree: true }); // 开始观察
     },
+    /**
+ * 检测给定的节点是否包含需要添加按钮的元素。
+ * @param {HTMLElement} node - 需要被检测的DOM节点。
+ */
     detect: function (node) {
+      // 尝试根据节点标签选择合适的article元素，或者在当前节点或其父节点中查找article元素
       let article =
         (node.tagName == "ARTICLE" && node) ||
         (node.tagName == "DIV" &&
           (node.querySelector("article") || node.closest("article")));
+      // 如果找到article元素，为其添加按钮
       if (article) this.addButtonTo(article);
+
+      // 根据节点标签选择合适的listitem元素集合，或者在当前节点中查找符合要求的listitem元素
       let listitems =
         (node.tagName == "LI" &&
           node.getAttribute("role") == "listitem" && [node]) ||
         (node.tagName == "DIV" && node.querySelectorAll('li[role="listitem"]'));
+      // 如果找到listitem元素集合，为其中的媒体元素添加按钮
       if (listitems) this.addButtonToMedia(listitems);
     },
+
+    /**
+     * 为指定的article元素添加下载按钮。
+     * @param {HTMLElement} article - 需要添加按钮的article元素。
+     */
     addButtonTo: function (article) {
+      // 如果该元素已经添加过按钮，则直接返回
       if (article.dataset.detected) return;
       article.dataset.detected = "true";
+
+      // 定义用于选择媒体元素的selector
       let media_selector = [
         'a[href*="/photo/1"]',
         'div[role="progressbar"]',
         'div[data-testid="playButton"]',
-        'a[href="/settings/content_you_see"]', //hidden content
-        "div.media-image-container", // for tweetdeck
-        "div.media-preview-container", // for tweetdeck
-        'div[aria-labelledby]>div:first-child>div[role="button"][tabindex="0"]', //for audio (experimental)
+        'a[href="/settings/content_you_see"]', // 隐藏的内容
+        "div.media-image-container", // 用于TweetDeck
+        "div.media-preview-container", // 用于TweetDeck
+        'div[aria-labelledby]>div:first-child>div[role="button"][tabindex="0"]', // 用于音频（实验性）
       ];
+
+      // 在article元素中查找第一个匹配的媒体元素
       let media = article.querySelector(media_selector.join(","));
       if (media) {
+        // 提取推文ID
         let status_id = article
           .querySelector('a[href*="/status/"]')
           .href.split("/status/")
           .pop()
           .split("/")
           .shift();
+
+        // 查找按钮组或者分享按钮的位置
         let btn_group = article.querySelector(
           'div[role="group"]:last-of-type, ul.tweet-actions, ul.tweet-detail-actions'
         );
@@ -104,6 +126,8 @@ const TMD = (function () {
             ":scope>div>div, li.tweet-action-item>a, li.tweet-detail-action-item>a"
           )
         ).pop().parentNode;
+
+        // 克隆分享按钮并修改为下载按钮
         let btn_down = btn_share.cloneNode(true);
         if (is_tweetdeck) {
           btn_down.firstElementChild.innerHTML =
@@ -115,15 +139,23 @@ const TMD = (function () {
         } else {
           btn_down.querySelector("svg").innerHTML = this.svg;
         }
+
+        // 判断是否已经下载
         let is_exist = history.indexOf(status_id) >= 0;
+        // 设置按钮状态
         this.status(btn_down, "tmd-down");
         this.status(
           btn_down,
           is_exist ? "completed" : "download",
           is_exist ? lang.completed : lang.download
         );
+
+        // 在按钮组中插入下载按钮
         btn_group.insertBefore(btn_down, btn_share.nextSibling);
+        // 设置按钮点击事件
         btn_down.onclick = () => this.click(btn_down, status_id, is_exist);
+
+        // 如果显示敏感内容，自动点击显示敏感内容的按钮
         if (show_sensitive) {
           let btn_show = article.querySelector(
             'div[aria-labelledby] div[role="button"][tabindex="0"]:not([data-testid]) > div[dir] > span > span'
@@ -131,6 +163,8 @@ const TMD = (function () {
           if (btn_show) btn_show.click();
         }
       }
+
+      // 为每个照片链接添加下载按钮（适用于包含多张照片的情况）
       let imgs = article.querySelectorAll('a[href*="/photo/"]');
       if (imgs.length > 1) {
         let status_id = article
@@ -143,8 +177,11 @@ const TMD = (function () {
         let btn_share = Array.from(
           btn_group.querySelectorAll(":scope>div>div")
         ).pop().parentNode;
+
         imgs.forEach((img) => {
+          // 提取照片的索引号
           let index = img.href.split("/status/").pop().split("/").pop();
+          // 判断是否已经下载
           let is_exist = history.indexOf(status_id) >= 0;
           let btn_down = document.createElement("div");
           btn_down.innerHTML =
@@ -152,8 +189,10 @@ const TMD = (function () {
             this.svg +
             "</svg></div></div>";
           btn_down.classList.add("tmd-down", "tmd-img");
+          // 设置按钮状态为下载
           this.status(btn_down, "download");
           img.parentNode.appendChild(btn_down);
+          // 设置按钮点击事件
           btn_down.onclick = (e) => {
             e.preventDefault();
             this.click(btn_down, status_id, is_exist, index);
