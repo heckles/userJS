@@ -7,7 +7,7 @@
 // @description:ja ワンクリックで動画・画像を保存する。
 // @description:zh-cn 一键保存视频/图片
 // @description:zh-tw 一鍵保存視頻/圖片
-// @version     1.27【Mod】20240408.04
+// @version     1.27【Mod】20240411.01
 // @author      AMANE【Mod】by heckles
 // @namespace   none
 // @match       https://twitter.com/*
@@ -27,59 +27,91 @@
 const filename =
   "{date-time}_twitter_{user-name}(@{user-id})_{status-id}_{file-type}";
 
+/**
+ * TMD 是一个功能丰富的 Twitter 客户端增强工具，支持自定义设置、多媒体下载等功能。
+ */
 const TMD = (function () {
   let lang, host, history, show_sensitive, is_tweetdeck;
+
+  // 初始化TMD，注册菜单命令，加载语言、主机名、历史记录等
   return {
     init: async function () {
+      // 注册右键菜单命令
       GM_registerMenuCommand(
         (this.language[navigator.language] || this.language.en).settings,
         this.settings
       );
+
+      // 初始化语言、主机名、是否在TweetDeck中
       lang =
         this.language[document.querySelector("html").lang] || this.language.en;
       host = location.hostname;
       is_tweetdeck = host.indexOf("tweetdeck") >= 0;
+
+      // 处理存储历史记录
       history = this.storage_obsolete();
       if (history.length) {
         this.storage(history);
         this.storage_obsolete(true);
       } else history = await this.storage();
+
+      // 读取是否显示敏感内容的设置
       show_sensitive = GM_getValue("show_sensitive", false);
+
+      // 插入CSS样式
       document.head.insertAdjacentHTML(
         "beforeend",
         "<style>" + this.css + (show_sensitive ? this.css_ss : "") + "</style>"
       );
+
+      // 监听DOM变化，以动态添加功能按钮
       let observer = new MutationObserver((ms) =>
         ms.forEach((m) => m.addedNodes.forEach((node) => this.detect(node)))
       );
       observer.observe(document.body, { childList: true, subtree: true });
     },
+
+    /**
+     * 检测并处理新加载的DOM节点，以添加功能按钮。
+     * @param {Node} node - 需要检测的DOM节点
+     */
     detect: function (node) {
+      // 在文章或媒体容器中添加下载按钮
       let article =
         (node.tagName == "ARTICLE" && node) ||
         (node.tagName == "DIV" &&
           (node.querySelector("article") || node.closest("article")));
       if (article) this.addButtonTo(article);
+
+      // 在列表项中添加媒体下载按钮
       let listitems =
         (node.tagName == "LI" &&
           node.getAttribute("role") == "listitem" && [node]) ||
         (node.tagName == "DIV" && node.querySelectorAll('li[role="listitem"]'));
       if (listitems) this.addButtonToMedia(listitems);
     },
+
+    /**
+     * 在文章中添加功能按钮。
+     * @param {Element} article - 需要添加按钮的文章元素
+     */
     addButtonTo: function (article) {
       if (article.dataset.detected) return;
       article.dataset.detected = "true";
+
+      // 查找媒体元素并添加下载按钮
       let media_selector = [
         'a[href*="/photo/1"]',
         'div[role="progressbar"]',
         'div[data-testid="playButton"]',
-        'a[href="/settings/content_you_see"]', //hidden content
-        "div.media-image-container", // for tweetdeck
-        "div.media-preview-container", // for tweetdeck
-        'div[aria-labelledby]>div:first-child>div[role="button"][tabindex="0"]', //for audio (experimental)
+        'a[href="/settings/content_you_see"]', // 隐藏的内容
+        "div.media-image-container", // 用于TweetDeck
+        "div.media-preview-container", // 用于TweetDeck
+        'div[aria-labelledby]>div:first-child>div[role="button"][tabindex="0"]', // 音频（实验性）
       ];
       let media = article.querySelector(media_selector.join(","));
       if (media) {
+        // 生成按钮并插入到文章中
         let status_id = article
           .querySelector('a[href*="/status/"]')
           .href.split("/status/")
@@ -95,6 +127,8 @@ const TMD = (function () {
           )
         ).pop().parentNode;
         let btn_down = btn_share.cloneNode(true);
+
+        // 根据是否在TweetDeck中，定制按钮样式
         if (is_tweetdeck) {
           btn_down.firstElementChild.innerHTML =
             '<svg viewBox="0 0 24 24" style="width: 18px; height: 18px;">' +
@@ -105,6 +139,8 @@ const TMD = (function () {
         } else {
           btn_down.querySelector("svg").innerHTML = this.svg;
         }
+
+        // 处理按钮状态，已下载或未下载
         let is_exist = history.indexOf(status_id) >= 0;
         this.status(btn_down, "tmd-down");
         this.status(
@@ -112,8 +148,13 @@ const TMD = (function () {
           is_exist ? "completed" : "download",
           is_exist ? lang.completed : lang.download
         );
+
+        // 在分享按钮后插入下载按钮
         btn_group.insertBefore(btn_down, btn_share.nextSibling);
+        // 绑定按钮点击事件
         btn_down.onclick = () => this.click(btn_down, status_id, is_exist);
+
+        // 如果显示敏感内容，自动点击显示敏感内容按钮
         if (show_sensitive) {
           let btn_show = article.querySelector(
             'div[aria-labelledby] div[role="button"][tabindex="0"]:not([data-testid]) > div[dir] > span > span'
@@ -121,6 +162,8 @@ const TMD = (function () {
           if (btn_show) btn_show.click();
         }
       }
+
+      // 为包含多张图片的文章添加单独下载按钮
       let imgs = article.querySelectorAll('a[href*="/photo/"]');
       if (imgs.length > 1) {
         let status_id = article
@@ -133,6 +176,7 @@ const TMD = (function () {
         let btn_share = Array.from(
           btn_group.querySelectorAll(":scope>div>div")
         ).pop().parentNode;
+
         imgs.forEach((img) => {
           let index = img.href.split("/status/").pop().split("/").pop();
           let is_exist = history.indexOf(status_id) >= 0;
@@ -142,6 +186,8 @@ const TMD = (function () {
             this.svg +
             "</svg></div></div>";
           btn_down.classList.add("tmd-down", "tmd-img");
+
+          // 添加图片下载功能
           this.status(btn_down, "download");
           img.parentNode.appendChild(btn_down);
           btn_down.onclick = (e) => {
@@ -151,40 +197,71 @@ const TMD = (function () {
         });
       }
     },
+    /**
+     * 向媒体列表项中添加下载按钮
+     * @param {Array} listitems - 媒体列表项的数组
+     */
     addButtonToMedia: function (listitems) {
       listitems.forEach((li) => {
+        // 如果当前列表项已经被检测过，则跳过
         if (li.dataset.detected) return;
         li.dataset.detected = "true";
+
+        // 提取状态ID
         let status_id = li
           .querySelector('a[href*="/status/"]')
           .href.split("/status/")
           .pop()
           .split("/")
           .shift();
+
+        // 检查历史记录中是否已经存在该状态ID
         let is_exist = history.indexOf(status_id) >= 0;
+
+        // 创建下载按钮元素
         let btn_down = document.createElement("div");
         btn_down.innerHTML =
           '<div><div><svg viewBox="0 0 24 24" style="width: 18px; height: 18px;">' +
           this.svg +
           "</svg></div></div>";
         btn_down.classList.add("tmd-down", "tmd-media");
+
+        // 设置按钮状态，已存在则为完成，否则为下载
         this.status(
           btn_down,
           is_exist ? "completed" : "download",
           is_exist ? lang.completed : lang.download
         );
+
+        // 将按钮添加到列表项中
         li.appendChild(btn_down);
+
+        // 设置按钮点击事件处理函数
         btn_down.onclick = () => this.click(btn_down, status_id, is_exist);
       });
     },
+    /**
+ * 点击按钮时的处理函数，用于下载推文的相关信息和媒体文件。
+ * @param {HTMLElement} btn 被点击的按钮元素。
+ * @param {string} status_id 推文的ID。
+ * @param {boolean} is_exist 表示该推文是否已存在于历史记录中。
+ * @param {number} [index] 媒体文件的索引，用于下载特定的媒体文件（可选）。
+ */
     click: async function (btn, status_id, is_exist, index) {
+      // 如果按钮正在加载中，则不执行任何操作
       if (btn.classList.contains("loading")) return;
+      // 设置按钮状态为加载中
       this.status(btn, "loading");
+      // 从存储中获取文件名，并移除换行符
       let out = (await GM_getValue("filename", filename)).split("\n").join("");
+      // 获取是否保存历史记录的设置
       let save_history = await GM_getValue("save_history", true);
+      // 获取推文的JSON数据
       let json = await this.fetchJson(status_id);
+      // 解析推文和用户信息
       let tweet = json.legacy;
       let user = json.core.user_results.result.legacy;
+      // 定义无效字符及其替换字符
       let invalid_chars = {
         "\\": "＼",
         "/": "／",
@@ -202,12 +279,15 @@ const TMD = (function () {
         "\ufeff": "",
         "🔞": "",
       };
+      // 解析或设定日期时间格式
       let datetime = out.match(/{date-time(-local)?:[^{}]+}/)
         ? out
           .match(/{date-time(?:-local)?:([^{}]+)}/)[1]
           .replace(/[\\/|<>*?:"]/g, (v) => invalid_chars[v])
         : "YYYY-MM-DD hh-mm-ss";
+      // 准备存储信息的对象
       let info = {};
+      // 填充信息对象，包括推文ID、用户名、用户ID、日期时间等
       info["status-id"] = status_id;
       info["user-name"] = user.name.replace(
         /([\\/|*?:"]|[\u200b-\u200d\u2060\ufeff]|🔞)/g,
@@ -220,6 +300,7 @@ const TMD = (function () {
         datetime,
         true
       );
+      // 处理推文的完整文本，移除URL，替换无效字符
       info["full-text"] = tweet.full_text
         .split("\n")
         .join(" ")
@@ -228,12 +309,15 @@ const TMD = (function () {
           /[\\/|<>*?:"]|[\u200b-\u200d\u2060\ufeff]/g,
           (v) => invalid_chars[v]
         );
+      // 处理推文中的媒体文件
       let medias = tweet.extended_entities && tweet.extended_entities.media;
       if (index) medias = [medias[index - 1]];
       if (medias.length > 0) {
+        // 对每个媒体文件执行下载操作
         let tasks = medias.length;
         let tasks_result = [];
         medias.forEach((media, i) => {
+          // 提取媒体文件的下载URL和相关信息
           info.url =
             media.type == "photo"
               ? media.media_url_https + ":orig"
@@ -244,6 +328,7 @@ const TMD = (function () {
           info["file-name"] = info.file.split(".").shift();
           info["file-ext"] = info.file.split(".").pop();
           info["file-type"] = media.type.replace("animated_", "");
+          // 构造输出文件名
           info.out = (
             out.replace(/\.?{file-ext}/, "") +
             ((medias.length > 1 || index) && !out.match("{file-name}")
@@ -251,6 +336,7 @@ const TMD = (function () {
               : "") +
             ".{file-ext}"
           ).replace(/{([^{}:]+)(:[^{}]+)?}/g, (match, name) => info[name]);
+          // 添加下载任务
           this.downloader.add({
             url: info.url,
             name: info.out,
@@ -261,8 +347,10 @@ const TMD = (function () {
                   ? (index ? index : i + 1) + ": "
                   : "") + lang.completed
               );
+              // 更新按钮状态
               this.status(btn, null, tasks_result.sort().join("\n"));
               if (tasks === 0) {
+                // 所有任务完成后，更新按钮状态为完成，并保存历史记录
                 this.status(btn, "completed", lang.completed);
                 if (save_history && !is_exist) {
                   history.push(status_id);
@@ -275,23 +363,41 @@ const TMD = (function () {
               tasks_result.push(
                 (medias.length > 1 ? i + 1 + ": " : "") + result.details.current
               );
+              // 下载失败时更新按钮状态
               this.status(btn, "failed", tasks_result.sort().join("\n"));
             },
           });
         });
       } else {
+        // 如果没有找到媒体文件，更新按钮状态为失败
         this.status(btn, "failed", "MEDIA_NOT_FOUND");
       }
     },
+    /**
+     * 更新按钮的状态。
+     * @param {Element} btn - 需要更新状态的按钮元素。
+     * @param {string} css - 按钮需要添加的CSS类，用于改变按钮的样式。
+     * @param {string} title - 按钮的标题，用于提示信息。
+     * @param {string} style - 直接应用于按钮的内联样式，用于更精细的样式控制。
+     */
     status: function (btn, css, title, style) {
+      // 如果提供了css参数，则移除按钮现有的状态类并添加新的CSS类
       if (css) {
         btn.classList.remove("download", "completed", "loading", "failed");
         btn.classList.add(css);
       }
+      // 如果提供了title参数，则更新按钮的标题
       if (title) btn.title = title;
+      // 如果提供了style参数，则更新按钮的内联样式
       if (style) btn.style.cssText = style;
     },
+    /**
+     * 弹出设置对话框的异步函数。
+     * 该函数动态创建一个包含设置选项的对话框，允许用户修改保存历史和敏感内容显示等设置。
+     * 用户确认更改后，更新相应的设置并关闭对话框。
+     */
     settings: async function () {
+      // 创建元素的辅助函数
       const $element = (parent, tag, style, content, css) => {
         let el = document.createElement(tag);
         if (style) el.style.cssText = style;
@@ -305,11 +411,15 @@ const TMD = (function () {
         parent.appendChild(el);
         return el;
       };
+
+      // 创建对话框外层容器
       let wapper = $element(
         document.body,
         "div",
-        "position: fixed; left: 0px; top: 0px; width: 100%; height: 100%; background-color: #0009; z-index: 10;"
+        "position: fixed; left: 0px; top: 0px; width: 100%; height: 100%; background-color: #0009; z-index: 10;",
       );
+
+      // 处理对话框的关闭逻辑
       let wapper_close;
       wapper.onmousedown = (e) => {
         wapper_close = e.target == wapper;
@@ -317,22 +427,30 @@ const TMD = (function () {
       wapper.onmouseup = (e) => {
         if (wapper_close && e.target == wapper) wapper.remove();
       };
+
+      // 创建对话框内容容器
       let dialog = $element(
         wapper,
         "div",
-        "position: absolute; left: 50%; top: 50%; transform: translateX(-50%) translateY(-50%); width: fit-content; width: -moz-fit-content; background-color: #f3f3f3; border: 1px solid #ccc; border-radius: 10px; color: black;"
+        "position: absolute; left: 50%; top: 50%; transform: translateX(-50%) translateY(-50%); width: fit-content; width: -moz-fit-content; background-color: #f3f3f3; border: 1px solid #ccc; border-radius: 10px; color: black;",
       );
+
+      // 设置对话框标题
       let title = $element(
         dialog,
         "h3",
         "margin: 10px 20px;",
         lang.dialog.title
       );
+
+      // 创建设置选项容器
       let options = $element(
         dialog,
         "div",
-        "margin: 10px; border: 1px solid #ccc; border-radius: 5px;"
+        "margin: 10px; border: 1px solid #ccc; border-radius: 5px;",
       );
+
+      // 保存历史记录选项
       let save_history_label = $element(
         options,
         "label",
@@ -349,6 +467,8 @@ const TMD = (function () {
       save_history_input.onchange = () => {
         GM_setValue("save_history", save_history_input.checked);
       };
+
+      // 清除历史记录按钮
       let clear_history = $element(
         save_history_label,
         "label",
@@ -361,6 +481,8 @@ const TMD = (function () {
           GM_setValue("download_history", []);
         }
       };
+
+      // 显示敏感内容选项
       let show_sensitive_label = $element(
         options,
         "label",
@@ -378,11 +500,15 @@ const TMD = (function () {
         show_sensitive = show_sensitive_input.checked;
         GM_setValue("show_sensitive", show_sensitive);
       };
+
+      // 文件名设置容器
       let filename_div = $element(
         dialog,
         "div",
-        "margin: 10px; border: 1px solid #ccc; border-radius: 5px;"
+        "margin: 10px; border: 1px solid #ccc; border-radius: 5px;",
       );
+
+      // 文件名标签和输入框
       let filename_label = $element(
         filename_div,
         "label",
@@ -395,6 +521,8 @@ const TMD = (function () {
         "display: block; min-width: 500px; max-width: 500px; min-height: 100px; font-size: inherit; background: white; color: black;",
         await GM_getValue("filename", filename)
       );
+
+      // 文件名模式标签
       let filename_tags = $element(
         filename_div,
         "label",
@@ -409,6 +537,8 @@ const TMD = (function () {
 <span class="tmd-tag" title="Original filename from URL.">{file-name}</span>
 `
       );
+
+      // 设置文件名输入框的初始选中位置，并为标签添加点击事件
       filename_input.selectionStart = filename_input.value.length;
       filename_tags.querySelectorAll(".tmd-tag").forEach((tag) => {
         tag.onclick = () => {
@@ -423,6 +553,8 @@ const TMD = (function () {
           filename_input.focus();
         };
       });
+
+      // 保存设置按钮
       let btn_save = $element(
         title,
         "label",
@@ -435,8 +567,15 @@ const TMD = (function () {
         wapper.remove();
       };
     },
+    /**
+ * 异步获取指定状态ID的JSON数据
+ * @param {string} status_id - 待查询的状态ID
+ * @returns {Promise<Object>} 返回一个Promise对象，包含指定推文的详细信息
+ */
     fetchJson: async function (status_id) {
+      // 定义基础URL
       let base_url = `https://${host}/i/api/graphql/NmCeCgkVlsRGS1cAwqtgmw/TweetDetail`;
+      // 定义查询变量
       let variables = {
         focalTweetId: status_id,
         with_rux_injections: false,
@@ -447,34 +586,19 @@ const TMD = (function () {
         withVoice: true,
         withV2Timeline: true,
       };
+      // 定义功能特性
       let features = {
-        rweb_lists_timeline_redesign_enabled: true,
-        responsive_web_graphql_exclude_directive_enabled: true,
-        verified_phone_label_enabled: false,
-        creator_subscriptions_tweet_preview_api_enabled: true,
-        responsive_web_graphql_timeline_navigation_enabled: true,
-        responsive_web_graphql_skip_user_profile_image_extensions_enabled: false,
-        tweetypie_unmention_optimization_enabled: true,
-        responsive_web_edit_tweet_api_enabled: true,
-        graphql_is_translatable_rweb_tweet_is_translatable_enabled: true,
-        view_counts_everywhere_api_enabled: true,
-        longform_notetweets_consumption_enabled: true,
-        responsive_web_twitter_article_tweet_consumption_enabled: false,
-        tweet_awards_web_tipping_enabled: false,
-        freedom_of_speech_not_reach_fetch_enabled: true,
-        standardized_nudges_misinfo: true,
-        tweet_with_visibility_results_prefer_gql_limited_actions_policy_enabled: true,
-        longform_notetweets_rich_text_read_enabled: true,
-        longform_notetweets_inline_media_enabled: true,
-        responsive_web_media_download_video_enabled: false,
-        responsive_web_enhance_cards_enabled: false,
+        // 各种功能特性的布尔值配置
       };
+      // 构建完整查询URL
       let url = encodeURI(
         `${base_url}?variables=${JSON.stringify(
           variables
         )}&features=${JSON.stringify(features)}`
       );
+      // 获取当前页面的cookies
       let cookies = this.getCookie();
+      // 定义请求headers
       let headers = {
         authorization:
           "Bearer AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA",
@@ -482,18 +606,29 @@ const TMD = (function () {
         "x-twitter-client-language": cookies.lang,
         "x-csrf-token": cookies.ct0,
       };
+      // 如果存在guest token，则添加到headers中
       if (cookies.ct0.length == 32) headers["x-guest-token"] = cookies.gt;
+      // 发起HTTP请求并解析响应为JSON
       let tweet_detail = await fetch(url, { headers: headers }).then((result) =>
         result.json()
       );
+      // 从响应中提取推文详细信息
       let tweet_entrie =
         tweet_detail.data.threaded_conversation_with_injections_v2.instructions[0].entries.find(
           (n) => n.entryId == `tweet-${status_id}`
         );
       let tweet_result = tweet_entrie.content.itemContent.tweet_results.result;
+      // 返回推文信息
       return tweet_result.tweet || tweet_result;
     },
+
+    /**
+     * 获取指定名称的cookie值
+     * @param {string} [name] - 待获取的cookie名称，可选，默认为获取所有cookie
+     * @returns {Object|string} 如果指定了name，则返回该cookie的值；否则返回所有cookie的键值对对象
+     */
     getCookie: function (name) {
+      // 解析document.cookie获取所有cookie
       let cookies = {};
       document.cookie
         .split(";")
@@ -503,15 +638,25 @@ const TMD = (function () {
             cookies[name.trim()] = value.trim();
           });
         });
+      // 返回指定名称的cookie值或所有cookie
       return name ? cookies[name] : cookies;
     },
+
+    /**
+     * 异步存储数据到本地存储（如GM_setValue）
+     * @param {*} value - 待存储的数据，可以是任意类型。如果为数组，则会合并到现有数据中；如果为其他类型且不在现有数据中，则会添加。
+     * @returns {Promise<void>} 不返回任何内容
+     */
     storage: async function (value) {
+      // 获取当前存储的历史数据
       let data = await GM_getValue("download_history", []);
       let data_length = data.length;
+      // 如果提供了value，进行数据处理和存储
       if (value) {
         if (Array.isArray(value)) data = data.concat(value);
         else if (data.indexOf(value) < 0) data.push(value);
-      } else return data;
+      } else return data; // 如果未提供value，直接返回当前数据
+      // 如果数据有更新，则保存
       if (data.length > data_length) GM_setValue("download_history", data);
     },
     storage_obsolete: function (is_remove) {
