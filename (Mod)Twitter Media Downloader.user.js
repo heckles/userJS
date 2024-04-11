@@ -4,7 +4,7 @@
 // @description:ja ワンクリックで動画・画像を保存する。
 // @description:zh-cn 一键保存视频/图片
 // @description:zh-tw 一鍵保存視頻/圖片
-// @version     1.27【Mod】20240411.03
+// @version     1.27【Mod】20240411.03.01
 // @author      AMANE【Mod】heckles
 // @namespace   none
 // @match       https://twitter.com/*
@@ -21,17 +21,26 @@
 // ==/UserScript==
 /* jshint esversion: 8 */
 
+// 定义文件名格式
 const filename =
   "{date-time}_twitter_{user-name}(@{user-id})_{status-id}_{file-type}";
 
+// TMD模块的封装
 const TMD = (function () {
+  // 初始化变量
   let lang, host, history, show_sensitive, is_tweetdeck;
+
+  // 返回一个包含各种方法的对象
   return {
+    // 初始化函数
     init: async function () {
+      // 注册右键菜单命令
       GM_registerMenuCommand(
         (this.language[navigator.language] || this.language.en).settings,
         this.settings
       );
+
+      // 初始化语言、主机名、是否为TweetDeck、历史记录和是否显示敏感内容
       lang =
         this.language[document.querySelector("html").lang] || this.language.en;
       host = location.hostname;
@@ -39,17 +48,21 @@ const TMD = (function () {
       history = this.storage_obsolete();
       if (history.length) {
         this.storage(history);
-        this.storage_obsolete(true);
-      } else history = await this.storage();
-      show_sensitive = GM_getValue("show_sensitive", false);
+        this.storage_obsolete(true); // 标记为已更新
+      } else history = await this.storage(); // 获取新的历史记录
+      show_sensitive = GM_getValue("show_sensitive", false); // 读取是否显示敏感内容的设置
+
+      // 插入CSS样式
       document.head.insertAdjacentHTML(
         "beforeend",
         "<style>" + this.css + (show_sensitive ? this.css_ss : "") + "</style>"
       );
+
+      // 设置MutationObserver观察文档变化
       let observer = new MutationObserver((ms) =>
         ms.forEach((m) => m.addedNodes.forEach((node) => this.detect(node)))
       );
-      observer.observe(document.body, { childList: true, subtree: true });
+      observer.observe(document.body, { childList: true, subtree: true }); // 开始观察
     },
     detect: function (node) {
       let article =
