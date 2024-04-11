@@ -200,29 +200,46 @@ const TMD = (function () {
         });
       }
     },
+    /**
+     * 向媒体列表项中添加下载按钮
+     * @param {Array} listitems - 媒体列表项的数组
+     */
     addButtonToMedia: function (listitems) {
       listitems.forEach((li) => {
+        // 如果当前列表项已经被检测过，则跳过
         if (li.dataset.detected) return;
         li.dataset.detected = "true";
+
+        // 提取状态ID
         let status_id = li
           .querySelector('a[href*="/status/"]')
           .href.split("/status/")
           .pop()
           .split("/")
           .shift();
+
+        // 检查历史记录中是否已经存在该状态ID
         let is_exist = history.indexOf(status_id) >= 0;
+
+        // 创建下载按钮元素
         let btn_down = document.createElement("div");
         btn_down.innerHTML =
           '<div><div><svg viewBox="0 0 24 24" style="width: 18px; height: 18px;">' +
           this.svg +
           "</svg></div></div>";
         btn_down.classList.add("tmd-down", "tmd-media");
+
+        // 设置按钮状态，已存在则为完成，否则为下载
         this.status(
           btn_down,
           is_exist ? "completed" : "download",
           is_exist ? lang.completed : lang.download
         );
+
+        // 将按钮添加到列表项中
         li.appendChild(btn_down);
+
+        // 设置按钮点击事件处理函数
         btn_down.onclick = () => this.click(btn_down, status_id, is_exist);
       });
     },
