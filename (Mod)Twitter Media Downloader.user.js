@@ -4,7 +4,7 @@
 // @description:ja ワンクリックで動画・画像を保存する。
 // @description:zh-cn 一键保存视频/图片
 // @description:zh-tw 一鍵保存視頻/圖片
-// @version     1.27【Mod】20240412
+// @version     1.27【Mod】20240412.0935
 // @author      AMANE【Mod】heckles
 // @namespace   none
 // @match       https://twitter.com/*
