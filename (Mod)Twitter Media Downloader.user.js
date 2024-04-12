@@ -4,15 +4,23 @@
 // @description:ja ワンクリックで動画・画像を保存する。
 // @description:zh-cn 一键保存视频/图片
 // @description:zh-tw 一鍵保存視頻/圖片
-// @version     1.27【Mod】20240411.16.09
+// @version     1.27【Mod】20240411.16.10
 // @author      AMANE【Mod】heckles
 // @namespace   none
 // @match       https://twitter.com/*
 // @match       https://mobile.twitter.com/*
 // @grant       GM_registerMenuCommand
-// @grant       GM_setValue
-// @grant       GM_getValue
-// @grant       GM_download
+//这些代码行看起来像是 Greasemonkey 脚本的元数据（metadata）注释，而不是普通的 JavaScript 代码。Greasemonkey 是一个 Firefox 插件，允许用户为网页添加自定义的 JavaScript 代码，从而修改或增强网页的功能。
+// @grant 注释用于声明脚本将使用哪些 Greasemonkey 提供的 API。这有助于确保脚本的权限设置正确，并且当脚本安装或更新时，Greasemonkey 会检查这些权限是否与用户设置的权限相符。
+//现在来逐一解释这些 @grant 注释：
+// @grant GM_setValue
+//这表示脚本将使用 GM_setValue 函数。GM_setValue 用于在 Greasemonkey 的存储中设置一个值。这个值可以在脚本的其他部分或其他脚本中通过 GM_getValue 获取。
+// @grant GM_getValue
+//这表示脚本将使用 GM_getValue 函数。GM_getValue 用于从 Greasemonkey 的存储中获取一个之前通过 GM_setValue 设置的值。
+// @grant GM_download
+//这表示脚本将使用 GM_download 函数。GM_download 是一个用于触发文件下载的函数。你可以使用它来下载并保存文件到用户的本地文件系统。
+//注意：随着 Greasemonkey 的发展，一些 API 可能已经被弃用或替代。如果你正在查看一个较新的脚本或库，建议查阅最新的 Greasemonkey 文档以了解最新的 API 和最佳实践。
+//此外，需要注意的是，直接在脚本中写这些 @grant 注释可能不是必需的，因为 Greasemonkey 通常可以从脚本的实际代码和使用的 API 中推断出所需的权限。但在某些情况下，明确声明这些权限可能是个好主意，以确保代码的清晰性和兼容性。
 // @compatible  Chrome
 // @compatible  Firefox
 // @license     MIT
