@@ -63,9 +63,14 @@ function StartJS() {
     aTitle.appendChild(document.createTextNode("F-name"));
     apName.appendChild(document.createTextNode("Path&Name"));
     aSrt.appendChild(document.createTextNode("Srt"));
-    [addButtonV.style.cssText, addButtonA.style.cssText, addButtonM.style.cssText, aCover.style.cssText, aTitle.style.cssText,
-    apName.style.cssText, apName.style.cssText, aSrt.style.cssText] = [btncss, btncss, btncss, btncss, btncss, btncss, btncss, btncss];
-    alert(addButtonV);
+    addButtonV.style.cssText = btncss;
+    addButtonA.style.cssText = btncss;
+    addButtonM.style.cssText = btncss;
+    aCover.style.cssText = btncss;
+    aTitle.style.cssText = btncss;
+    apName.style.cssText = btncss;
+    apName.style.cssText = btncss;
+    aSrt.style.cssText = btncss;
     buttonDiv.appendChild(addButtonV);
     buttonDiv.appendChild(addButtonA);
     buttonDiv.appendChild(addButtonM);
